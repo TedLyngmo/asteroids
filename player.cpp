@@ -20,7 +20,8 @@ Player::Player(sf::RenderWindow& window) :
     window_width(window.getSize().x),
     window_height(window.getSize().y),
     normalTexture(loadTextureFromFile("content/normal.png")),
-    firedTexture(loadTextureFromFile("content/fired.png"))
+    firedTexture(loadTextureFromFile("content/fired.png")),
+    bulletMgr(window, 15) //15 bullets tops
 
 {
     player.setTexture(normalTexture);
@@ -34,58 +35,54 @@ Player::Player(sf::RenderWindow& window) :
     player.setPosition(wwidth / 2, wheight / 2);
 }
 
+float Player::getAngle() const
+{
+    return player.getRotation();
+}
+
 const sf::Vector2f& Player::getPosition() const {
     return player.getPosition();
 }
 
-void Player::Move(float dt)
+const sf::Vector2f& Player::getVelocity() const {
+    return velocity;
+}
+
+bool Player::handleEvent([[maybe_unused]] const sf::Event& ev) {
+    return false;
+}
+
+
+void Player::Move(duration time)
 {
-    int angle = player.getRotation() * M_PI / 180;
+
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
+        bulletMgr.fireBullet(getPosition(), getVelocity(), getAngle());
+    }
+
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
+        player.rotate(-4);
+    } else if(sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
+        player.rotate(4);
+    }
+
     // Accelerate on button press
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
     {
         player.setTexture(firedTexture);
-
-        while (acceleration.y <= 1.0f)
-        {
-            acceleration.y += acc;
-            acceleration.x += acc;
-        }
-        velocity += acceleration;
-        velocity *= 0.50f;
-        direction.x += velocity.x * std::cos(angle);
-        direction.y += velocity.y * std::sin(angle);
+        auto angle = player.getRotation() * M_PI / 180;
+        velocity += sf::Vector2f(std::cos(angle), std::sin(angle));
     }
-    // Decelerate on button release
     else
     {
         player.setTexture(normalTexture);
-
-        velocity -= acceleration;
-        if (velocity.x <= 0.3f)
-        {
-            velocity.x = 0;
-        }
-
-        if (velocity.y <= 0.3f)
-        {
-            velocity.y = 0;
-        }
     }
-
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
-    {
-        player.rotate(-4);
-    }
-    else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
-    {
-        player.rotate(4);
-    }
-
     // Move in direction player is pointed
-    player.move(direction * dt);
+    player.move(velocity * time);
 
     screenWrapping();
+
+    bulletMgr.Move(time);
 }
 
 void Player::screenWrapping()
@@ -111,12 +108,8 @@ void Player::screenWrapping()
     }
 }
 
-float Player::returnAngle()
-{
-    return player.getRotation();
-}
-
 void Player::Draw()
 {
     windowptr->draw(player);
+    bulletMgr.Draw();
 }
