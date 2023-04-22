@@ -12,12 +12,12 @@
 GameManager::GameManager() : 
     window([] () -> sf::RenderWindow {
         sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
-        auto screenWidth = desktop.width * 4 / 5;
-        auto screenHeight = desktop.height * 4 / 5;
+        auto screenWidth = desktop.width * 5 / 6;
+        auto screenHeight = desktop.height * 5 / 6;
         return {sf::VideoMode(screenWidth, screenHeight, desktop.bitsPerPixel), "Asteroids"};
     }())
 {
-    window.setFramerateLimit(60);
+    window.setFramerateLimit(120);
 
     addObject<Player>(window);
     addObject<RockManager>(window, 20);
@@ -31,15 +31,9 @@ void GameManager::run() {
     Player& player = *static_cast<Player*>(objects[0].get());
 
     sf::Event event;
-    while (window.isOpen())
-    {
-        if (window.pollEvent(event))
-        {
-            if (event.type == sf::Event::Closed)
-            {
-                window.close();
-            }
-
+    while (window.isOpen()) {
+        while (window.pollEvent(event)) {
+            if (event.type == sf::Event::Closed) window.close();
             player.handleEvent(event);
         }
 

@@ -20,7 +20,7 @@ BulletManager::Bullet::Bullet(sf::Vector2f position, sf::Vector2f speed, float a
 
     sf::Vector2f dir{std::cos(radians), std::sin(radians)};
 
-    velocity += 150 * dir;
+    velocity += 150.f * dir;
 
     // give it an extra nudge towards the end of the player
     bullet.setPosition(position + 12.5f * dir);

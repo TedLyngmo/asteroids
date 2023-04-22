@@ -1,4 +1,6 @@
 #include "player.hpp"
+
+#include "helpers.hpp"
 #include "pi.hpp"
 
 #include <SFML/Graphics.hpp>
@@ -66,12 +68,17 @@ void Player::Move(duration time)
         player.rotate(60 * time);
     }
 
-    // Accelerate on button press
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
     {
         player.setTexture(firedTexture);
         auto angle = player.getRotation() * M_PI / 180;
-        velocity += sf::Vector2f(std::cos(angle), std::sin(angle)) * (time * 15);
+        float tfact = time * 25;
+        velocity += sf::Vector2f(std::cos(angle), std::sin(angle)) * tfact;
+        auto speed2 = lengthSquared(velocity);
+        if(speed2 > 20000.f) {
+            std::cout << "max speed reached" << std::endl;
+            velocity *= 20000.f / speed2;
+        }
     }
     else
     {

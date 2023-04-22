@@ -1,4 +1,5 @@
 SRC := $(wildcard *.cpp)
+HEADERS := $(wildcard *.h)
 OBJ = $(SRC:%.cpp=build/%.o)
 AOBJ = $(SRC:%.cpp=build/%.asan.o)
 
