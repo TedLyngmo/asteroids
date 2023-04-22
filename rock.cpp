@@ -11,11 +11,11 @@
 #include <cmath>
 #include <iostream>
 
-const std::array<Polygon, 3> RockManager::shapes{
-    Polygon({{0,10}, {50,0}, {120,10}, {100,90}, {30,100}, {0,50}}),
-    Polygon({{0,10}, {50,0}, {120,10}, {100,90}, {30,100}, {0,50}}),
-    Polygon({{0,10}, {50,0}, {120,10}, {100,90}, {30,100}, {0,50}}),
-};
+const std::array<Polygon, 3> RockManager::shapes{{
+    {{0,10}, {50,0}, {120,10}, {100,90}, {30,100}, {0,50}},
+    {{30,0}, {47, 10}, {44, 20}, {60,10}, {70,20}, {60,30}, {63,42}, {47,40}, {40,50}, {30,40}, {20,40}, {10, 30}, {24, 22}},
+    {{0,10}, {50,0}, {120,10}, {100,90}, {30,100}, {0,50}},
+}};
 
 static std::mt19937_64 prng(std::random_device{}());
 static std::uniform_real_distribution<float> rnd_angle_dist(0, 360);
