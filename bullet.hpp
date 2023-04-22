@@ -13,7 +13,7 @@ public:
 
     void fireBullet(sf::Vector2f position, sf::Vector2f speed, float angle);
 
-    void Move(float time) override;
+    void Move(duration time) override;
     void Draw() override;
 
 private:

@@ -5,6 +5,7 @@
 #include "pi.hpp"
 
 #include <algorithm>
+#include <execution>
 #include <cmath>
 
 BulletManager::Bullet::Bullet(sf::Vector2f position, sf::Vector2f speed, float angle) :
@@ -19,7 +20,7 @@ BulletManager::Bullet::Bullet(sf::Vector2f position, sf::Vector2f speed, float a
 
     sf::Vector2f dir{std::cos(radians), std::sin(radians)};
 
-    velocity += 100 * dir;
+    velocity += 150 * dir;
 
     // give it an extra nudge towards the end of the player
     bullet.setPosition(position + 12.5f * dir);
@@ -55,13 +56,16 @@ void BulletManager::fireBullet(sf::Vector2f position, sf::Vector2f speed, float 
 
 void BulletManager::Move(duration time)
 {
-    for(auto& bullet : bullets) bullet.Move(time);
+    std::for_each(std::execution::par, bullets.begin(), bullets.end(), [time](Bullet& b) {
+        b.Move(time);
+    });
 
     // remove bullets that has moved out of bounds
-    std::erase_if(bullets, [this](const Bullet& bullet) {
-        auto [x, y] = bullet.bullet.getPosition();
+    auto ne = std::remove_if(std::execution::par, bullets.begin(), bullets.end(), [this](const Bullet& b) {
+        auto [x, y] = b.bullet.getPosition();
         return x < 0 || x >= window_width || y < 0 || y >= window_height;
     });
+    bullets.erase(ne, bullets.end());
 }
 
 void BulletManager::Draw()

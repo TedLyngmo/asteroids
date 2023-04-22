@@ -21,7 +21,7 @@ Player::Player(sf::RenderWindow& window) :
     window_height(window.getSize().y),
     normalTexture(loadTextureFromFile("content/normal.png")),
     firedTexture(loadTextureFromFile("content/fired.png")),
-    bulletMgr(window, 15) //15 bullets tops
+    bulletMgr(window, 40) //40 bullets tops
 
 {
     player.setTexture(normalTexture);
@@ -61,9 +61,9 @@ void Player::Move(duration time)
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
-        player.rotate(-4);
+        player.rotate(-60 * time);
     } else if(sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
-        player.rotate(4);
+        player.rotate(60 * time);
     }
 
     // Accelerate on button press
@@ -71,7 +71,7 @@ void Player::Move(duration time)
     {
         player.setTexture(firedTexture);
         auto angle = player.getRotation() * M_PI / 180;
-        velocity += sf::Vector2f(std::cos(angle), std::sin(angle));
+        velocity += sf::Vector2f(std::cos(angle), std::sin(angle)) * (time * 15);
     }
     else
     {

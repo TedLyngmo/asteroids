@@ -1,24 +1,26 @@
 #include "game_manager.hpp"
 
-#include "player.hpp"
 #include "bullet.hpp"
+#include "player.hpp"
+#include "rock.hpp"
 
 #include <SFML/Graphics.hpp>
 
+#include <algorithm>
 #include <iostream>
 
 GameManager::GameManager() : 
     window([] () -> sf::RenderWindow {
         sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
-        auto screenWidth = desktop.width * 3 / 4;
-        auto screenHeight = desktop.height * 3 / 4;
+        auto screenWidth = desktop.width * 4 / 5;
+        auto screenHeight = desktop.height * 4 / 5;
         return {sf::VideoMode(screenWidth, screenHeight, desktop.bitsPerPixel), "Asteroids"};
     }())
 {
     window.setFramerateLimit(60);
 
     addObject<Player>(window);
-    //addObject<BulletManager>(window, max_bullets);
+    addObject<RockManager>(window, 20);
 }
 
 void GameManager::run() {
