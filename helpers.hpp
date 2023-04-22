@@ -3,6 +3,7 @@
 #include <SFML/System/Vector2.hpp>
 
 #include <cmath>
+#include <iterator>
 #include <ostream>
 #include <type_traits>
 
@@ -22,24 +23,36 @@ std::ostream& operator<<(std::ostream& os, const sf::Vector2<T>& v) {
 
 // findCentroid based on
 // https://stackoverflow.com/a/33852627/7582247
-template<class T>
-sf::Vector2<T> findCentroid(const sf::Vector2<T>* pts, unsigned nPts) {
-    sf::Vector2<T> off = pts[0];
-    T twicearea = 0;
-    T x = 0;
-    T y = 0;
-    sf::Vector2<T> p1, p2;
-    T f;
-    for (unsigned i = 0, j = nPts - 1; i < nPts; j = i++) {
-        p1 = pts[i];
-        p2 = pts[j];
-        f = (p1.x - off.x) * (p2.y - off.y) - (p2.x - off.x) * (p1.y - off.y);
+template<class Iter, class V2 = typename std::iterator_traits<Iter>::value_type>
+V2 findCentroid(Iter first, Iter last) {
+    if(first == last) return V2{};                   // {0,0} or throw or leave UB
+
+    if(auto next = std::next(first); next == last) { // a single point
+        return *first;
+    } else if(std::next(next) == last) {             // a line
+        const auto& [x1, y1] = *first;
+        const auto& [x2, y2] = *next;
+        return V2{(x1 + x2) / 2, (y1 + y2) / 2};     // midpoint of the line
+    }
+
+    // three or more points:
+    const auto& [offx, offy] = *first;
+    using T1 = std::remove_cvref_t<decltype(offx)>;
+    using T2 = std::remove_cvref_t<decltype(offy)>;
+    T1 x{};
+    T2 y{};
+    decltype((x * y) - (x * y)) twicearea{}, f;
+
+    for(auto prev = std::prev(last); first != last; prev = first++) {
+        const auto& [p1x, p1y] = *first;
+        const auto& [p2x, p2y] = *prev;
+        f = (p1x - offx) * (p2y - offy) - (p2x - offx) * (p1y - offy);
         twicearea += f;
-        x += (p1.x + p2.x - 2 * off.x) * f;
-        y += (p1.y + p2.y - 2 * off.y) * f;
+        x += (p1x + p2x - 2 * offx) * f;
+        y += (p1y + p2y - 2 * offy) * f;
     }
 
     f = twicearea * 3;
 
-    return sf::Vector2<T>(x / f + off.x, y / f + off.y);
+    return V2{static_cast<T1>(x / f + offx), static_cast<T2>(y / f + offy)};
 }

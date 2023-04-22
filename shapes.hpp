@@ -16,7 +16,7 @@ public:
         for(unsigned idx = 0; idx < pnts.size(); ++idx) {
             setPoint(idx, pnts.begin()[idx]);
         }
-        setOrigin(findCentroid(pnts.begin(), pnts.size()));
+        setOrigin(findCentroid(pnts.begin(), pnts.end()));
     }
 
 };
