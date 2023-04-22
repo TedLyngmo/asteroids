@@ -1,6 +1,7 @@
 #pragma once
 
 #include "game_object.hpp"
+#include "shapes.hpp"
 
 #include <SFML/Graphics.hpp>
 
@@ -24,7 +25,7 @@ private:
         void Move(duration time);
         void drawTo(sf::RenderWindow& window);
 
-        sf::ConvexShape rock;
+        Polygon rock;
         sf::Vector2f velocity;
         float angular_velocity;
     };
@@ -38,5 +39,5 @@ private:
 
     duration time_since_last_spawn{};
 
-    static const std::array<std::pair<sf::ConvexShape, sf::Vector2f>, 3> shapes;
+    static const std::array<Polygon, 3> shapes;
 };

@@ -30,9 +30,6 @@ private:
     sf::Texture normalTexture;
     sf::Texture firedTexture;
 
-    const float acc = 0.1f;
-    const float dAcc = 1.0f;
-
     sf::Vector2f velocity;
 
     BulletManager bulletMgr;
