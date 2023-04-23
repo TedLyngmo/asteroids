@@ -19,7 +19,9 @@ GameManager::GameManager() :
 {
     window.setFramerateLimit(120);
 
-    addObject<Player>(window);
+    auto bm = std::make_unique<BulletManager>(window);
+    addObject<Player>(window, *bm.get());
+    objects.push_back(std::move(bm));
     addObject<RockManager>(window, 20);
 }
 
@@ -29,12 +31,14 @@ void GameManager::run() {
     duration time{};
 
     Player& player = *static_cast<Player*>(objects[0].get());
+    BulletManager& bm = *static_cast<BulletManager*>(objects[1].get());
+    RockManager& rm = *static_cast<RockManager*>(objects[2].get());
 
     sf::Event event;
     while (window.isOpen()) {
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) window.close();
-            player.handleEvent(event);
+            //player.handleEvent(event);
         }
 
         //----
@@ -45,6 +49,10 @@ void GameManager::run() {
         for(auto& obj : objects) obj->Draw();
 
         window.display();
+
+        for(auto& rock : rm) {
+            bm.erase_if([&rock](const auto& bullet) { return rock.isInside(bullet.getPosition()); });
+        }
         //----
         time = clock.restart().asSeconds();
     }

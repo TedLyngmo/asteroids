@@ -9,7 +9,7 @@
 
 class Player : public GameObject {
 public:
-    Player(sf::RenderWindow& window);
+    Player(sf::RenderWindow& window, BulletManager&);
 
     void Move(duration time) override;
     void Draw() override;
@@ -32,7 +32,7 @@ private:
 
     sf::Vector2f velocity;
 
-    BulletManager bulletMgr;
+    BulletManager* bulletMgr;
 };
 
 #endif

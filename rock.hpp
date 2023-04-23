@@ -16,6 +16,13 @@ public:
     void Move(duration time) override;
     void Draw() override;
 
+    inline auto begin() {
+        return rocks.begin();
+    }
+    inline auto end() {
+        return rocks.end();
+    }
+
 private:
     void Tick(duration time);
 
@@ -24,6 +31,9 @@ private:
 
         void Move(duration time);
         void drawTo(sf::RenderWindow& window);
+        inline bool isInside(sf::Vector2f pnt) const {
+            return rock.isInside(pnt);
+        }
 
         Polygon rock;
         sf::Vector2f velocity;

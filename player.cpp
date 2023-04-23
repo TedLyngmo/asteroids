@@ -17,13 +17,13 @@ sf::Texture loadTextureFromFile(const std::string& filename) {
     return rv;
 }
 
-Player::Player(sf::RenderWindow& window) :
+Player::Player(sf::RenderWindow& window, BulletManager& bm) :
     windowptr(&window),
     window_width(window.getSize().x),
     window_height(window.getSize().y),
     normalTexture(loadTextureFromFile("content/normal.png")),
     firedTexture(loadTextureFromFile("content/fired.png")),
-    bulletMgr(window, 40) //40 bullets tops
+    bulletMgr(&bm)
 
 {
     player.setTexture(normalTexture);
@@ -57,9 +57,8 @@ bool Player::handleEvent([[maybe_unused]] const sf::Event& ev) {
 
 void Player::Move(duration time)
 {
-
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
-        bulletMgr.fireBullet(getPosition(), getVelocity(), getAngle());
+        bulletMgr->AddBullet(*this, getPosition(), getVelocity(), getAngle());
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
@@ -88,8 +87,6 @@ void Player::Move(duration time)
     player.move(velocity * time);
 
     screenWrapping();
-
-    bulletMgr.Move(time);
 }
 
 void Player::screenWrapping()
@@ -118,5 +115,4 @@ void Player::screenWrapping()
 void Player::Draw()
 {
     windowptr->draw(player);
-    bulletMgr.Draw();
 }

@@ -8,13 +8,14 @@
 #include <execution>
 #include <cmath>
 
-BulletManager::Bullet::Bullet(sf::Vector2f position, sf::Vector2f speed, float angle) :
+BulletManager::Bullet::Bullet(GameObject& owner, sf::Vector2f position, sf::Vector2f speed, float angle) :
     //bullet(sf::Vector2f(8, 8)),
     bullet(4, 6),
-    velocity(speed)
+    velocity(speed),
+    owner(&owner)
 {
     bullet.setOrigin(8 / 2, 8 / 2);
-    bullet.setFillColor(sf::Color(200, 200, 200));
+    bullet.setFillColor(sf::Color(255, 100, 100));
 
     float radians = angle * M_PI / 180.f;
 
@@ -38,20 +39,15 @@ void BulletManager::Bullet::drawTo(sf::RenderWindow& window)
 
 // -----------------------------------------------------------------------------
 
-BulletManager::BulletManager(sf::RenderWindow& window, unsigned MaxBullets) :
+BulletManager::BulletManager(sf::RenderWindow& window) :
     windowptr(&window),
     window_width(window.getSize().x),
-    window_height(window.getSize().y),
-    max_bullets(MaxBullets)
-{
-}
+    window_height(window.getSize().y)
+{}
 
-void BulletManager::fireBullet(sf::Vector2f position, sf::Vector2f speed, float angle)
+void BulletManager::AddBullet(GameObject& owner, sf::Vector2f position, sf::Vector2f speed, float angle)
 {
-    if(bullets.size() < max_bullets)
-    {
-        bullets.emplace_back(position, speed, angle);
-    }
+    bullets.emplace_back(owner, position, speed, angle);
 }
 
 void BulletManager::Move(duration time)
