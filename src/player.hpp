@@ -27,7 +27,7 @@ public:
     void Draw() override;
     void AddScore(unsigned score) override;
 
-    float getAngle() const;
+    sf::Angle getAngle() const;
     const sf::Vector2f& getPosition() const;
     const sf::Vector2f& getVelocity() const;
     inline float getMass() const { return 10000.f; }

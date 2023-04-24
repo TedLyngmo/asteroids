@@ -57,7 +57,7 @@ Player::Player(GameManager& gm, sf::RenderWindow& window, BulletManager& bm) :
     player.setPosition({wwidth / 2.f, wheight / 2.f});
 }
 
-float Player::getAngle() const
+sf::Angle Player::getAngle() const
 {
     return player.getRotation();
 }
@@ -87,15 +87,15 @@ void Player::Move(duration time)
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
-        player.rotate(-70 * time);
+        player.rotate(sf::radians(-1 * time));
     } else if(sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
-        player.rotate(70 * time);
+        player.rotate(sf::radians(1 * time));
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
     {
         player.setTexture(firedTexture[fire_dist(prng)]);
-        auto angle = player.getRotation() * pi / 180;
+        auto angle = player.getRotation().asRadians();
         float tfact = time * 25;
 
         auto force = sf::Vector2f(std::cos(angle), std::sin(angle)) * tfact;
@@ -163,7 +163,7 @@ void Player::Draw()
     scoret.setPosition({wc.x - scob.width/2.f, wc.y - ws.y/2});
     */
 
-    sf::Text num(std::to_string(score), gameManagerPtr->getFont(), 30);
+    sf::Text num(gameManagerPtr->getFont(), std::to_string(score), 30);
     auto numb = num.getGlobalBounds();
     num.setPosition({wc.x - numb.width/2.f, wc.y - ws.y/2});
 

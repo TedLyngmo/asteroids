@@ -57,15 +57,16 @@ std::uint8_t rndcolor(unsigned shape_no) {
 
 RockManager::Rock::Rock(sf::Vector2f position, sf::Vector2f velocity, float angular_velocity, unsigned shape_no) :
     rock(RockManager::shapes[shape_no]), velocity(velocity), angular_velocity(angular_velocity), shape{shape_no} {
-    rock.setRotation(rnd_angle_dist(prng));
+    rock.setRotation(sf::degrees(rnd_angle_dist(prng)));
 
     rock.setFillColor(sf::Color(rndcolor(shape_no), rndcolor(shape_no), rndcolor(shape_no)));
 
     rock.setPosition(position);
 }
 
-void RockManager::Rock::Move(duration time) {
-    rock.rotate(angular_velocity * time);
+void RockManager::Rock::Move(duration time)
+{
+    rock.rotate(sf::degrees(angular_velocity * time));
     rock.move(velocity * time);
 }
 
@@ -126,6 +127,7 @@ void RockManager::Tick(duration time) {
 
     constexpr float time_between_rocks = 30.f; // seconds
     if((time_since_last_spawn += time) > time_between_rocks) {
+        std::cout << "spawning rock " << time_since_last_spawn << std::endl;
         time_since_last_spawn -= time_between_rocks;
         AddRock();
         --rocks_to_spawn;

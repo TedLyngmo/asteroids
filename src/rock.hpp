@@ -2,6 +2,7 @@
 
 #include "game_object.hpp"
 
+#include "helpers.hpp"
 #include "shapes.hpp"
 #include "times.hpp"
 
