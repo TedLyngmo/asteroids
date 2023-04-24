@@ -57,7 +57,7 @@ std::uint8_t rndcolor(unsigned shape_no) {
 
 RockManager::Rock::Rock(sf::Vector2f position, sf::Vector2f velocity, float angular_velocity, unsigned shape_no) :
     rock(RockManager::shapes[shape_no]), velocity(velocity), angular_velocity(angular_velocity), shape{shape_no} {
-    rock.setRotation(rnd_angle_dist(prng));
+    rock.setRotation(sf::degrees(rnd_angle_dist(prng)));
 
     rock.setFillColor(sf::Color(rndcolor(shape_no), rndcolor(shape_no), rndcolor(shape_no)));
 
@@ -65,7 +65,7 @@ RockManager::Rock::Rock(sf::Vector2f position, sf::Vector2f velocity, float angu
 }
 
 void RockManager::Rock::Move(duration time) {
-    rock.rotate(angular_velocity * time);
+    rock.rotate(sf::degrees(angular_velocity * time));
     rock.move(velocity * time);
 }
 
@@ -125,6 +125,7 @@ void RockManager::Tick(duration time) {
 
     constexpr float time_between_rocks = 30.f; // seconds
     if((time_since_last_spawn += time) > time_between_rocks) {
+        std::cout << "spawning rock " << time_since_last_spawn << std::endl;
         time_since_last_spawn -= time_between_rocks;
         AddRock();
         --rocks_to_spawn;
@@ -140,19 +141,19 @@ void RockManager::Move(duration time) {
         auto [x, y] = r.rock.getPosition();
         auto rb = r.rock.getGlobalBounds();
 
-        if(rb.left >= view_bounds.right) {
+        if(rb.left >= view_bounds.right()) {
             r.rock.setPosition({view_bounds.left - rb.width / 2, y});
             r.aimTowards({window_width / 2, window_height / 2});
         } else if(rb.left + rb.width < view_bounds.left) {
-            r.rock.setPosition({view_bounds.right - 1 + rb.width / 2, y});
+            r.rock.setPosition({view_bounds.right() - 1 + rb.width / 2, y});
             r.aimTowards({window_width / 2, window_height / 2});
         }
 
-        if(rb.top >= view_bounds.bottom) {
+        if(rb.top >= view_bounds.bottom()) {
             r.rock.setPosition({x, view_bounds.top - rb.height / 2});
             r.aimTowards({window_width / 2, window_height / 2});
         } else if(rb.top + rb.height < view_bounds.top) {
-            r.rock.setPosition({x, view_bounds.bottom - 1 + rb.height / 2});
+            r.rock.setPosition({x, view_bounds.bottom() - 1 + rb.height / 2});
             r.aimTowards({window_width / 2, window_height / 2});
         }
     });

@@ -14,25 +14,30 @@
 #include <type_traits>
 
 template<class T>
-struct BoundingRect {
+struct BoundingRect : sf::Rect<T> {
+    using sf::Rect<T>::Rect;
+    using sf::Rect<T>::operator=;
+
     BoundingRect() = default;
-    explicit constexpr BoundingRect(const sf::Rect<T>& r) : left(r.left), top(r.top), right(r.left + r.width), bottom(r.top + r.height) {}
+    explicit constexpr BoundingRect(const sf::Rect<T>& r) : sf::Rect<T>(r) {}
     explicit constexpr BoundingRect(const sf::Vector2<T>& center, const sf::Vector2<T>& size) : BoundingRect(sf::Rect<T>(sf::Vector2<T>(center.x - size.x / 2.f, center.y - size.y / 2.f), sf::Vector2<T>(size.x, size.y))) {}
     explicit constexpr BoundingRect(const sf::View& view) : BoundingRect(view.getCenter(), view.getSize()) {}
 
-    BoundingRect& operator=(const sf::Rect<T>& r) {
+    /*
+    BoundingRect& operator=(const sf::Rect<T>&r) {
         *this = BoundingRect(r);
         return *this;
     }
+    */
     BoundingRect& operator=(const sf::View& v) {
         *this = BoundingRect(v);
         return *this;
     }
 
-    T left;
-    T top;
-    T right;
-    T bottom;
+    T right() const { return this->left + this->width; }
+    T bottom() const { return this->top + this->height; }
+
+    friend std::ostream& operator<<(std::ostream& os, const BoundingRect& br) { return os << "BoundingRect{" << br.left << '-' << br.right << ',' << br.top << '-' << br.bottom << '}'; }
 };
 
 template<typename T>
@@ -66,7 +71,7 @@ T distance(const sf::Vector2<T>& lhs, const sf::Vector2<T>& rhs) {
 }
 
 template<class T>
-sf::Vector2<T> normalize(const sf::Vector2<T>& v) {
+sf::Vector2<T> normalized(const sf::Vector2<T>& v) {
     return v / length(v);
 }
 
@@ -169,7 +174,7 @@ constexpr sf::Vector2f getCollisionImpulseVector(MassObject1& lhs, MassObject2& 
     // const auto radius_sum_squared = (lhs.getRadius() + rhs.getRadius()) * (lhs.getRadius() + rhs.getRadius());
 
     // if(distance_squared <= radius_sum_squared) { // objects have collided
-    const auto collision_normal = normalize(delta);
+    const auto collision_normal = normalized(delta);
     const auto relative_velocity = lhs.getVelocity() - rhs.getVelocity();
     const auto closing_velocity = dot(relative_velocity, collision_normal);
 

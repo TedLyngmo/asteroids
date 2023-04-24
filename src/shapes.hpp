@@ -1,7 +1,5 @@
 #pragma once
 
-#include "helpers.hpp"
-
 #include <SFML/Graphics.hpp>
 
 #include "helpers.hpp"
@@ -86,7 +84,7 @@ public:
 public:
     template<class Shapeish>
     bool intersects(const Shapeish& s) const {
-        if(not getGlobalBounds().intersects(s.getGlobalBounds())) return false;
+        if(not getGlobalBounds().findIntersection(s.getGlobalBounds())) return false;
 
         auto count = s.getPointCount();
         if(count < 2) return false;

@@ -27,6 +27,7 @@
 *.lib
 
 # MSVC
+*.vcxproj.user
 .vs
 Debug
 Release

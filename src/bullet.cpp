@@ -8,13 +8,13 @@
 #include <cmath>
 #include <execution>
 
-BulletManager::Bullet::Bullet(BulletOwner& owner, sf::Vector2f position, sf::Vector2f speed, float angle) :
+BulletManager::Bullet::Bullet(BulletOwner& owner, sf::Vector2f position, sf::Vector2f speed, sf::Angle angle) :
     // bullet(sf::Vector2f(8, 8)),
     bullet(3, 6), velocity(speed), owner(&owner) {
     bullet.setOrigin({3.f, 3.f});
     bullet.setFillColor(sf::Color(255, 100, 100));
 
-    float radians = angle * pi / 180.f;
+    float radians = angle.asRadians();
 
     sf::Vector2f dir{std::cos(radians), std::sin(radians)};
 
@@ -36,7 +36,7 @@ void BulletManager::Bullet::drawTo(sf::RenderWindow& window) {
 
 BulletManager::BulletManager(sf::RenderWindow& window) : windowptr(&window), window_width(static_cast<float>(window.getSize().x)), window_height(static_cast<float>(window.getSize().y)) {}
 
-void BulletManager::AddBullet(BulletOwner& owner, sf::Vector2f position, sf::Vector2f speed, float angle) {
+void BulletManager::AddBullet(BulletOwner& owner, sf::Vector2f position, sf::Vector2f speed, sf::Angle angle) {
     bullets.emplace_back(owner, position, speed, angle);
 }
 

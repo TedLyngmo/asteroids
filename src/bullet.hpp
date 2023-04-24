@@ -12,7 +12,7 @@ class BulletManager : public GameObject {
 public:
     BulletManager(sf::RenderWindow& window);
 
-    void AddBullet(BulletOwner& owner, sf::Vector2f position, sf::Vector2f speed, float angle);
+    void AddBullet(BulletOwner& owner, sf::Vector2f position, sf::Vector2f speed, sf::Angle angle);
 
     void Move(duration time) override;
     void Draw() override;
@@ -27,7 +27,7 @@ public:
 
 private:
     struct Bullet {
-        Bullet(BulletOwner& owner, sf::Vector2f position, sf::Vector2f speed, float angle);
+        Bullet(BulletOwner& owner, sf::Vector2f position, sf::Vector2f speed, sf::Angle angle);
 
         void Move(duration time);
         void drawTo(sf::RenderWindow& window);

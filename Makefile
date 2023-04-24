@@ -8,12 +8,12 @@ TOOLSSRC := $(wildcard tools/*.cpp)
 TOOLSHEADERS := $(wildcard tools/*.hpp)
 TOOLSOBJ = $(TOOLSSRC:tools/%.cpp=build/%.o)
 
-SFMLINCS := $(shell pkg-config --cflags sfml-all)
-SFMLLIBS := $(shell pkg-config --libs sfml-all)
+#SFMLINCS := $(shell pkg-config --with-path=/home/ted/local/pkgconfig --cflags sfml-all)
+SFMLLIBS := $(shell pkg-config --with-path=/home/ted/local/pkgconfig --libs sfml-all)
 TARGET = asteroids
 
-CCMD = $(CXX) -DTBB_SUPPRESS_DEPRECATED_MESSAGES=1 -std=c++20 -g $(SFMLINCS) -c -o $@ $< -Wall -Wextra -Woverloaded-virtual -pedantic-errors $(OPTS)
-LCMD = $(CXX) -o $@ -std=c++20 -g $^ $(SFMLLIBS) $(OPTS) -ltbb
+CCMD = $(CXX) -DTBB_SUPPRESS_DEPRECATED_MESSAGES=1 -std=c++20 -I ~/local/include $(SFMLINCS) -c -o $@ $< -Wall -Wextra -Woverloaded-virtual -pedantic-errors $(OPTS)
+LCMD = $(CXX) -o $@ -std=c++20 $^ -L ~/local/lib64 -L ~/local/lib $(SFMLLIBS) $(OPTS) -ltbb  -Wl,-rpath ~/local/lib64
 
 $(TARGET): $(OBJ)
 	$(LCMD) -O3

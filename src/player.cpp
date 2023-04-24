@@ -32,17 +32,13 @@ sf::Vector2f GhostSprite::getPoint(std::size_t index) const {
 }
 
 sf::Texture loadTextureFromFile(const std::string& filename) {
-    sf::Texture rv;
-    if(!rv.loadFromFile(filename)) {
-        throw std::runtime_error("ERROR: Could not loadTextureFromFile \"" + filename + '"');
-    }
-    return rv;
+    if(sf::Texture rv; rv.loadFromFile(filename)) return rv;
+    throw std::runtime_error("ERROR: Could not loadTextureFromFile \"" + filename + '"');
 }
 
 Player::Player(GameManager& gm, sf::RenderWindow& window, BulletManager& bm) :
     gameManagerPtr(&gm), bulletMgr(&bm), windowptr(&window), view(window.getView()), normalTexture(loadTextureFromFile("content/normal.png")),
-    firedTexture{loadTextureFromFile("content/fired1.png"), loadTextureFromFile("content/fired2.png")}, view_bounds(view) {
-    player.setTexture(normalTexture);
+    firedTexture{loadTextureFromFile("content/fired1.png"), loadTextureFromFile("content/fired2.png")}, player(normalTexture), view_bounds(view) /*, healthbar(view_bounds)*/ {
     player.setScale({.2f, .2f});
 
     // auto [left, top, pwidth, pheight] = player.getGlobalBounds();
@@ -51,9 +47,12 @@ Player::Player(GameManager& gm, sf::RenderWindow& window, BulletManager& bm) :
 
     auto [wwidth, wheight] = window.getSize();
     player.setPosition({wwidth / 2.f, wheight / 2.f});
+
+    // auto& hb = healthbar.add<sf::RectangleShape>(sf::Vector2f{400,400});
+    // hb.setPosition(sf::Vector2f{view_bounds.width() / 2.f, view_bounds.top});
 }
 
-float Player::getAngle() const {
+sf::Angle Player::getAngle() const {
     return player.getRotation();
 }
 
@@ -75,20 +74,20 @@ static std::bernoulli_distribution fire_dist{};
 void Player::Move(duration time) {
     fire_cooldown -= time;
 
-    if(fire_cooldown < 0.f && sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
+    if(fire_cooldown < 0.f && sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space)) {
         bulletMgr->AddBullet(*this, getPosition(), getVelocity(), getAngle());
         fire_cooldown += 0.30f;
     }
 
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
-        player.rotate(-70 * time);
-    } else if(sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
-        player.rotate(70 * time);
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left)) {
+        player.rotate(sf::radians(-1 * time));
+    } else if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right)) {
+        player.rotate(sf::radians(1 * time));
     }
 
-    if(sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up)) {
         player.setTexture(firedTexture[fire_dist(prng)]);
-        auto angle = player.getRotation() * pi / 180;
+        auto angle = player.getRotation().asRadians();
         float tfact = time * 25;
 
         auto force = sf::Vector2f(std::cos(angle), std::sin(angle)) * tfact;
@@ -117,17 +116,17 @@ void Player::Move(duration time) {
 
 void Player::screenWrapping() {
     // If player goes beyond x bounds set position to opposite site of screen
-    if(player.getPosition().x >= view_bounds.right) {
+    if(player.getPosition().x >= view_bounds.right()) {
         player.setPosition({view_bounds.left, player.getPosition().y});
     } else if(player.getPosition().x < view_bounds.left) {
-        player.setPosition({view_bounds.right - 1, player.getPosition().y});
+        player.setPosition({view_bounds.right() - 1, player.getPosition().y});
     }
 
     // If player goes beyond y bounds set position to opposite site of screen
-    if(player.getPosition().y >= view_bounds.bottom) {
+    if(player.getPosition().y >= view_bounds.bottom()) {
         player.setPosition({player.getPosition().x, view_bounds.top});
     } else if(player.getPosition().y < view_bounds.top) {
-        player.setPosition({player.getPosition().x, view_bounds.bottom - 1});
+        player.setPosition({player.getPosition().x, view_bounds.bottom() - 1});
     }
 }
 
@@ -146,11 +145,12 @@ void Player::Draw() {
     scoret.setPosition({wc.x - scob.width/2.f, wc.y - ws.y/2});
     */
 
-    sf::Text num(std::to_string(score), gameManagerPtr->getFont(), 30);
+    sf::Text num(gameManagerPtr->getFont(), std::to_string(score), 30);
     auto numb = num.getGlobalBounds();
     num.setPosition({wc.x - numb.width / 2.f, wc.y - ws.y / 2});
 
     // windowptr->draw(scoret);
     windowptr->draw(num);
+    // windowptr->draw(healthbar);
     windowptr->draw(player);
 }

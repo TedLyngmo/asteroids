@@ -4,6 +4,7 @@
 #include "bullet.hpp"
 #include "game_object.hpp"
 #include "helpers.hpp"
+#include "shapecontainer.hpp"
 #include "times.hpp"
 
 #include <SFML/Graphics.hpp>
@@ -11,8 +12,26 @@
 #include <array>
 #include <iostream>
 
+class HealthBar : public ShapeContainer {
+public:
+    inline HealthBar(const sf::FloatRect& br) : ShapeContainer(br) {
+        setPosition({br.left + br.width * 2.f / 3.f, br.top});
+
+        // auto& r = add<sf::RectangleShape>(sf::Vector2f{br.width() * 2 / 5.f, br.height() / 20.f});
+        // auto& r = add<sf::RectangleShape>(sf::Vector2f{br.width() / 3.f, br.height() / 20});
+        // auto& r = add<sf::RectangleShape>(sf::Vector2f{br.width(), br.height()});
+        std::cout << "bounds: " << br << '\n';
+        auto& r = add<sf::RectangleShape>(sf::Vector2f{500, 500});
+        // r.setPosition({br.left/3, br.top / 2});
+        // r.setPosition({br.left/3, br.top / 1.f  });
+        r.setPosition({0.f, 0.f});
+    }
+};
+
 class GhostSprite : public sf::Sprite {
 public:
+    using sf::Sprite::Sprite;
+
     std::size_t getPointCount() const;
     sf::Vector2f getPoint(std::size_t index) const;
 };
@@ -27,7 +46,7 @@ public:
     void Draw() override;
     void AddScore(unsigned score) override;
 
-    float getAngle() const;
+    sf::Angle getAngle() const;
     const sf::Vector2f& getPosition() const;
     const sf::Vector2f& getVelocity() const;
     inline float getMass() const { return 10000.f; }
@@ -54,9 +73,9 @@ private:
     BulletManager* bulletMgr;
     sf::RenderWindow* windowptr;
     sf::View view;
-    GhostSprite player;
     sf::Texture normalTexture;
     std::array<sf::Texture, 2> firedTexture;
+    GhostSprite player;
 
     BoundingRect<float> view_bounds;
 
@@ -64,6 +83,8 @@ private:
 
     duration fire_cooldown = 0;
     unsigned score = 0;
+
+    // HealthBar healthbar;
     float health = 10000.f;
 };
 

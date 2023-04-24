@@ -15,14 +15,14 @@ GameManager::GameManager() :
         sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
         unsigned screenWidth;
         unsigned screenHeight;
-        if(desktop.width > desktop.height) {
-            screenHeight = desktop.height * 19 / 20;
+        if(desktop.size.x > desktop.size.y) {
+            screenHeight = desktop.size.y * 19 / 20;
             screenWidth = screenHeight * 4 / 3;
         } else {
-            screenWidth = desktop.width;
+            screenWidth = desktop.size.x;
             screenHeight = screenWidth * 3 / 4;
         }
-        return {sf::VideoMode(screenWidth, screenHeight, desktop.bitsPerPixel), "Asteroids"};
+        return {sf::VideoMode({screenWidth, screenHeight}, desktop.bitsPerPixel), "Asteroids", sf::Style::Default ^ sf::Style::Resize};
     }()),
     view(window.getDefaultView()) {
     if(font.loadFromMemory(memfont.data(), memfont.size()) == false) {
