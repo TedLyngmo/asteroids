@@ -14,7 +14,7 @@ BulletManager::Bullet::Bullet(GameObject& owner, sf::Vector2f position, sf::Vect
     velocity(speed),
     owner(&owner)
 {
-    bullet.setOrigin(8 / 2, 8 / 2);
+    bullet.setOrigin({4.f, 4.f});
     bullet.setFillColor(sf::Color(255, 100, 100));
 
     float radians = angle * M_PI / 180.f;

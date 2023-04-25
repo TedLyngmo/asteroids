@@ -27,14 +27,14 @@ Player::Player(sf::RenderWindow& window, BulletManager& bm) :
 
 {
     player.setTexture(normalTexture);
-    player.setScale(.2, .2);
+    player.setScale({.2, .2});
 
     //auto [left, top, pwidth, pheight] = player.getGlobalBounds();
     auto [left, top, pwidth, pheight] = player.getLocalBounds();
-    player.setOrigin(pwidth / 2, pheight / 2);
+    player.setOrigin({pwidth / 2.f, pheight / 2.f});
 
     auto[wwidth, wheight] = window.getSize();
-    player.setPosition(wwidth / 2, wheight / 2);
+    player.setPosition({wwidth / 2.f, wheight / 2.f});
 }
 
 float Player::getAngle() const
