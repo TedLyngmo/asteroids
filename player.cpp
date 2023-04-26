@@ -61,7 +61,7 @@ void Player::Move(duration time)
 
     if (fire_cooldown < 0.f && sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
         bulletMgr->AddBullet(*this, getPosition(), getVelocity(), getAngle());
-        fire_cooldown += 0.5f;
+        fire_cooldown += 0.30f;
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {

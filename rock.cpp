@@ -108,6 +108,14 @@ RockManager::RockManager(sf::RenderWindow& window, unsigned MaxRocks) :
 {
 }
 
+void RockManager::Tick(duration time) {
+    constexpr float time_between_rocks = 30.f; // seconds
+    if((time_since_last_spawn += time) > time_between_rocks) {
+        time_since_last_spawn -= time_between_rocks;
+        AddRock();
+    }
+}
+
 void RockManager::Move(duration time)
 {
     Tick(time);
@@ -148,13 +156,6 @@ void RockManager::AddRock() {
     }
 
     AddRockTo(rocks, position, getVelocity(10, rnd_radians_dist(prng)), rnd_radians_dist(prng) / 8, 0);
-}
-
-void RockManager::Tick(duration time) {
-    if((time_since_last_spawn += time) > 10) {
-        time_since_last_spawn -= 10;
-        AddRock();
-    }
 }
 
 void RockManager::Draw()

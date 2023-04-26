@@ -60,7 +60,7 @@ private:
     unsigned max_rocks;
     std::vector<Rock> rocks;
 
-    duration time_since_last_spawn{};
+    duration time_since_last_spawn = 30; // spawn-a-lot
 
     static const std::array<Polygon, 8> shapes;
 };
