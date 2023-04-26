@@ -32,6 +32,7 @@ private:
 
     sf::Vector2f velocity;
 
+    duration fire_cooldown = 0;
     BulletManager* bulletMgr;
 };
 

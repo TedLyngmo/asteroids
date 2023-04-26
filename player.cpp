@@ -57,20 +57,23 @@ bool Player::handleEvent([[maybe_unused]] const sf::Event& ev) {
 
 void Player::Move(duration time)
 {
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
+    fire_cooldown -= time;
+
+    if (fire_cooldown < 0.f && sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
         bulletMgr->AddBullet(*this, getPosition(), getVelocity(), getAngle());
+        fire_cooldown += 0.5f;
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
-        player.rotate(-60 * time);
+        player.rotate(-70 * time);
     } else if(sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
-        player.rotate(60 * time);
+        player.rotate(70 * time);
     }
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
     {
         player.setTexture(firedTexture);
-        auto angle = player.getRotation() * M_PI / 180;
+        auto angle = player.getRotation() * pi / 180;
         float tfact = time * 25;
         velocity += sf::Vector2f(std::cos(angle), std::sin(angle)) * tfact;
         auto speed2 = lengthSquared(velocity);

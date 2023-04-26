@@ -6,37 +6,84 @@
 
 #include <cstddef>
 #include <initializer_list>
+#include <iterator>
 #include <utility>
 #include <vector>
+#include <ostream>
 
 class Polygon : public sf::ConvexShape {
 public:
 
-    inline Polygon(std::initializer_list<sf::Vector2f> pnts) : sf::ConvexShape(pnts.size()) {
-        for(std::size_t idx = 0; idx < pnts.size(); ++idx) {
-            setPoint(idx, pnts.begin()[idx]);
+    template<class It>
+    Polygon(It first, It last) : sf::ConvexShape(std::distance(first, last)), tpnts(std::distance(first, last)) {
+        std::size_t idx = 0;
+        for(auto curr = first; curr != last; ++curr, ++idx) {
+            setPoint(idx, *curr);
         }
-        setOrigin(findCentroid(pnts.begin(), pnts.end()));
+        setOrigin(findCentroid(first, last));
     }
 
-    bool isInside(sf::Vector2f point) const {
+    inline Polygon(std::initializer_list<sf::Vector2f> pnts) : Polygon(pnts.begin(), pnts.end()) {}
+
+    // Copyright 2000 softSurfer, 2012 Dan Sunday
+    // This code may be freely used and modified for any purpose
+    // providing that this copyright notice is included with it.
+    // SoftSurfer makes no warranty for this code, and cannot be held
+    // liable for any real or imagined damage resulting from its use.
+    // Users of this code must verify correctness for their application.
+    // https://web.archive.org/web/20130126163405/http://geomalgorithms.com/a03-_inclusion.html
+    //
+    //    Return: >0 for point  left of the line through P0 and P1
+    //            =0 for point  on the line
+    //            <0 for point  right of the line
+    static inline float sideOfLine(sf::Vector2f point, sf::Vector2f P0, sf::Vector2f P1) {
+        return (P1.x - P0.x) * (point.y - P0.y) - (point.x -  P0.x) * (P1.y - P0.y);
+    }
+
+    // wn_PnPoly(): winding number test for a point in a polygon
+    //      Input:   P = a point,
+    //      Return:  wn = the winding number (=0 only when P is outside)
+    inline int wn_PnPoly(sf::Vector2f P) const
+    {
+        int    wn = 0;    // the  winding number counter
+
+        // loop through all edges of the polygon
+        auto prev = tpnts.back();
+        for(auto& curr : tpnts) {
+            if (curr.y <= P.y) {                           // start y <= P.y
+                if (prev.y  > P.y)                         // an upward crossing
+                     if (sideOfLine(P, curr, prev) > 0.f)  // P left of  edge
+                         ++wn;                             // have  a valid up intersect
+            }
+            else {                                         // start y > P.y (no test needed)
+                if (prev.y  <= P.y)                        // a downward crossing
+                     if (sideOfLine(P, curr, prev) < 0.f)  // P right of  edge
+                         --wn;                             // have  a valid down intersect
+            }
+            prev = curr;
+        }
+        return wn;
+    }
+
+    inline bool isInside(sf::Vector2f point) const {
+        sf::FloatRect rect = getGlobalBounds();
+        if(not rect.contains(point)) return false;
+        Transpose();
+        return wn_PnPoly(point) != 0;
+    }
+
+    inline friend std::ostream& operator<<(std::ostream& os, const Polygon& p) {
+        auto pos = p.getPosition();
+        return os << "Polygon{" << pos.x << ',' << pos.y << '}';
+    }
+
+private:
+    inline void Transpose() const {
         const auto& trans = getTransform();
 
-        std::vector<sf::Vector2f> tpnts;
-        tpnts.reserve(getPointCount());
-
         for(std::size_t idx = 0, cnt = getPointCount(); idx < cnt; ++idx) {
-            tpnts.push_back(trans.transformPoint(getPoint(idx)));
+            tpnts[idx] = trans.transformPoint(getPoint(idx));
         }
-
-        for(std::size_t i = 0, j = tpnts.size() - 1; i < tpnts.size(); j = i++) {
-            auto first = tpnts[i];
-            auto second = tpnts[j];
-            // assuming all points are stored in clockwise order a point "left" of a line in the polygon is outside the polygon
-            if((second.x - first.x) * (point.y - first.y) > (second.y - first.y) * (point.x - first.x)) return false;
-
-        }
-        return true;
     }
-
+    mutable std::vector<sf::Vector2f> tpnts;
 };

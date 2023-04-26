@@ -10,6 +10,22 @@
 #include <vector>
 
 class RockManager : public GameObject {
+    struct Rock {
+        Rock(sf::Vector2f position, sf::Vector2f velocity, float angular_velocity, unsigned shape_no);
+
+        void Move(duration time);
+        void drawTo(sf::RenderWindow& window);
+        inline bool isInside(sf::Vector2f pnt) const {
+            return rock.isInside(pnt);
+        }
+
+        Polygon rock;
+        sf::Vector2f velocity;
+        float angular_velocity;
+        unsigned shape;
+        bool is_hit = false;
+    };
+
 public:
     RockManager(sf::RenderWindow& window, unsigned max_rocks);
 
@@ -23,22 +39,19 @@ public:
         return rocks.end();
     }
 
+    void hit(Rock& r);
+
+    void update();
+
+    template<class Func>
+    void erase_if(Func&& func) {
+        std::erase_if(rocks, std::forward<Func>(func));
+    }
+
 private:
+    void AddRock();
+    void AddRockTo(std::vector<Rock>& vec, sf::Vector2f position, sf::Vector2f velocity, float angular_speed, unsigned shape_no);
     void Tick(duration time);
-
-    struct Rock {
-        Rock(sf::Vector2f position, float speed, float radians);
-
-        void Move(duration time);
-        void drawTo(sf::RenderWindow& window);
-        inline bool isInside(sf::Vector2f pnt) const {
-            return rock.isInside(pnt);
-        }
-
-        Polygon rock;
-        sf::Vector2f velocity;
-        float angular_velocity;
-    };
 
     sf::RenderWindow* windowptr;
     float window_width;
@@ -49,5 +62,5 @@ private:
 
     duration time_since_last_spawn{};
 
-    static const std::array<Polygon, 3> shapes;
+    static const std::array<Polygon, 8> shapes;
 };

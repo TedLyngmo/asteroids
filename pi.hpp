@@ -3,6 +3,5 @@
 #include <cmath>
 #include <numbers>
 
-#ifndef M_PI
-inline constexpr auto M_PI = std::numbers::pi_v<float>;
-#endif
+inline constexpr auto pi = std::numbers::pi_v<float>;
+inline constexpr auto twopi = 2.f * std::numbers::pi_v<float>;

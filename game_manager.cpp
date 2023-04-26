@@ -17,12 +17,12 @@ GameManager::GameManager() :
         return {sf::VideoMode(screenWidth, screenHeight, desktop.bitsPerPixel), "Asteroids"};
     }())
 {
-    window.setFramerateLimit(120);
+    window.setFramerateLimit(60);
 
+    addObject<RockManager>(window, 20);
     auto bm = std::make_unique<BulletManager>(window);
     addObject<Player>(window, *bm.get());
     objects.push_back(std::move(bm));
-    addObject<RockManager>(window, 20);
 }
 
 void GameManager::run() {
@@ -30,9 +30,9 @@ void GameManager::run() {
     sf::Clock clock;
     duration time{};
 
-    Player& player = *static_cast<Player*>(objects[0].get());
-    BulletManager& bm = *static_cast<BulletManager*>(objects[1].get());
-    RockManager& rm = *static_cast<RockManager*>(objects[2].get());
+    RockManager& rm = *static_cast<RockManager*>(objects[0].get());
+    Player& player = *static_cast<Player*>(objects[1].get());
+    BulletManager& bm = *static_cast<BulletManager*>(objects[2].get());
 
     sf::Event event;
     while (window.isOpen()) {
@@ -51,8 +51,15 @@ void GameManager::run() {
         window.display();
 
         for(auto& rock : rm) {
-            bm.erase_if([&rock](const auto& bullet) { return rock.isInside(bullet.getPosition()); });
+            bm.erase_if([&](const auto& bullet) {
+                if(rock.isInside(bullet.getPosition())) {
+                    rm.hit(rock);
+                    return true;
+                }
+                return false;
+            });
         }
+        rm.update();
         //----
         time = clock.restart().asSeconds();
     }
