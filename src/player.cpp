@@ -1,6 +1,7 @@
 #include "player.hpp"
 
 #include "helpers.hpp"
+#include "game_manager.hpp"
 #include "pi.hpp"
 
 #include <SFML/Graphics.hpp>
@@ -17,15 +18,22 @@ sf::Texture loadTextureFromFile(const std::string& filename) {
     return rv;
 }
 
-Player::Player(sf::RenderWindow& window, BulletManager& bm) :
+Player::Player(GameManager& gm, sf::RenderWindow& window, BulletManager& bm) :
+    gameManagerPtr(&gm),
     windowptr(&window),
-    window_width(window.getSize().x),
-    window_height(window.getSize().y),
+    view(window.getView()),
     normalTexture(loadTextureFromFile("content/normal.png")),
     firedTexture(loadTextureFromFile("content/fired.png")),
     bulletMgr(&bm)
-
 {
+    sf::Vector2f center = view.getCenter();
+    sf::Vector2f size = view.getSize();
+    view_bounds.left = center.x - size.x / 2.f;
+    view_bounds.top = center.y - size.y / 2.f;
+    view_bounds.width = size.x;
+    view_bounds.height = size.y;
+    std::cout << view_bounds << std::endl;
+
     player.setTexture(normalTexture);
     player.setScale({.2, .2});
 
@@ -35,6 +43,8 @@ Player::Player(sf::RenderWindow& window, BulletManager& bm) :
 
     auto[wwidth, wheight] = window.getSize();
     player.setPosition({wwidth / 2.f, wheight / 2.f});
+
+
 }
 
 float Player::getAngle() const
@@ -76,7 +86,7 @@ void Player::Move(duration time)
         auto angle = player.getRotation() * pi / 180;
         float tfact = time * 25;
         velocity += sf::Vector2f(std::cos(angle), std::sin(angle)) * tfact;
-        auto speed2 = lengthSquared(velocity);
+        auto speed2 = lengthSquared(velocity); // velocity.lengthSq() in SFML3
         if(speed2 > 20000.f) {
             std::cout << "max speed reached" << std::endl;
             velocity *= 20000.f / speed2;
@@ -95,27 +105,40 @@ void Player::Move(duration time)
 void Player::screenWrapping()
 {
     // If player goes beyond x bounds set position to opposite site of screen
-    if (player.getPosition().x > window_width)
+    if (player.getPosition().x >= view_bounds.left + view_bounds.width)
     {
-        player.setPosition(0, player.getPosition().y);
+        player.setPosition(view_bounds.left, player.getPosition().y);
     }
-    else if (player.getPosition().x <= 0)
+    else if (player.getPosition().x < view_bounds.left)
     {
-        player.setPosition(window_width, player.getPosition().y);
+        player.setPosition(view_bounds.left + view_bounds.width - 1, player.getPosition().y);
     }
 
     // If player goes beyond y bounds set position to opposite site of screen
-    if (player.getPosition().y >= window_height)
+    if (player.getPosition().y >= view_bounds.top + view_bounds.height)
     {
-        player.setPosition(player.getPosition().x, 0);
+        player.setPosition(player.getPosition().x, view_bounds.top);
     }
-    else if (player.getPosition().y <= 0)
+    else if (player.getPosition().y < view_bounds.top)
     {
-        player.setPosition(player.getPosition().x, window_height);
+        player.setPosition(player.getPosition().x, view_bounds.top + view_bounds.height - 1);
     }
+}
+
+void Player::AddScore(unsigned s) {
+    score += s;
 }
 
 void Player::Draw()
 {
+    sf::Text txt(std::to_string(score), gameManagerPtr->getFont(), 30);
+    auto tb = txt.getGlobalBounds();
+
+    sf::Vector2f wc = view.getCenter();
+    sf::Vector2f ws = view.getSize();
+
+    txt.setPosition({wc.x - tb.width/2.f, wc.y - ws.y/2});
+
+    windowptr->draw(txt);
     windowptr->draw(player);
 }

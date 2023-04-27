@@ -1,7 +1,9 @@
 #pragma once
 
 #include "game_object.hpp"
+
 #include "shapes.hpp"
+#include "times.hpp"
 
 #include <SFML/Graphics.hpp>
 
@@ -60,7 +62,8 @@ private:
     unsigned max_rocks;
     std::vector<Rock> rocks;
 
-    duration time_since_last_spawn = 30; // spawn-a-lot
+    duration time_since_last_spawn = 30 * 3; // spawn-a-lot
+    std::chrono::steady_clock::time_point stop_spawning_at = std::chrono::steady_clock::now() + std::chrono::seconds(60);
 
     static const std::array<Polygon, 8> shapes;
 };

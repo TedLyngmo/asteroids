@@ -11,8 +11,8 @@
 #include <cmath>
 #include <iostream>
 
-static std::mt19937_64 no_random(3);
-static std::uniform_real_distribution<float> rfactor(.90, 1.10);
+static std::mt19937_64 no_random(3); // make sure the rocks always looks the same
+static std::uniform_real_distribution<float> rfactor(.90, 1.10); // to not just have boring circles
 
 sf::Vector2f getVelocity(float speed, float direction_radians) {
     return {speed * std::cos(direction_radians), speed * std::sin(direction_radians)};
@@ -31,20 +31,21 @@ Polygon make_Polygon(float radius, std::size_t pnts) {
 }
 
 const std::array<Polygon, 8> RockManager::shapes{{
-    make_Polygon(200, 31),
-    make_Polygon(172, 17),
-    make_Polygon(144, 15),
-    make_Polygon(116, 13),
-    make_Polygon(88, 11),
-    make_Polygon(60, 9),
-    make_Polygon(32, 7),
-    make_Polygon(10, 5),
+    make_Polygon(191, 31),
+    make_Polygon(162, 19),
+    make_Polygon(139, 17),
+    make_Polygon(116, 15),
+    make_Polygon(88, 13),
+    make_Polygon(50, 11),
+    make_Polygon(32, 9),
+    make_Polygon(15, 7),
 }};
 
 static std::mt19937_64 prng(std::random_device{}());
 static std::uniform_real_distribution<float> rnd_angle_dist(0, 360);
 static std::uniform_real_distribution<float> rnd_radians_dist(-pi, pi);
-static std::uniform_real_distribution<float> rnd_angvel_dist(-90, 90);
+static std::uniform_real_distribution<float> rnd_angvel_dist(-27.5f, 27.5f);
+static std::uniform_real_distribution<float> rnd_color_dist(-5, 5);
 
 RockManager::Rock::Rock(sf::Vector2f position, sf::Vector2f velocity, float angular_velocity, unsigned shape_no) :
     rock(RockManager::shapes[shape_no]),
@@ -54,7 +55,7 @@ RockManager::Rock::Rock(sf::Vector2f position, sf::Vector2f velocity, float angu
 {
     rock.setRotation(rnd_angle_dist(prng));
 
-    rock.setFillColor(sf::Color(120 + shape_no*10, 120 + shape_no*10, 120 + shape_no*10));
+    rock.setFillColor(sf::Color(120 + shape_no*10 + rnd_color_dist(prng), 120 + shape_no*10 + rnd_color_dist(prng), 120 + shape_no*10 + rnd_color_dist(prng)));
 
     rock.setPosition(position);
 }
@@ -87,11 +88,11 @@ void RockManager::update() {
         if(not rock.is_hit) return false;
 
         if(rock.shape + 1 < RockManager::shapes.size()) {
-            auto velocity = rock.velocity * 1.1f + getVelocity(1, rnd_radians_dist(prng));
-            auto ang_speed = rnd_radians_dist(prng);
+            auto velocity = rock.velocity * 1.1f + getVelocity(3, rnd_radians_dist(prng));
+            auto ang_speed = rnd_angvel_dist(prng);
             AddRockTo(new_rocks, rock.rock.getPosition(), velocity, ang_speed, rock.shape + 1);
-            if(rock.shape + 2 < RockManager::shapes.size())
-                AddRockTo(new_rocks, rock.rock.getPosition(), velocity, ang_speed, rock.shape + 1);
+            //if(rock.shape + 2 < RockManager::shapes.size())
+            AddRockTo(new_rocks, rock.rock.getPosition(), velocity, ang_speed, rock.shape + 1);
         }
         return true;
         
@@ -109,6 +110,8 @@ RockManager::RockManager(sf::RenderWindow& window, unsigned MaxRocks) :
 }
 
 void RockManager::Tick(duration time) {
+    if(std::chrono::steady_clock::now() > stop_spawning_at) return;
+
     constexpr float time_between_rocks = 30.f; // seconds
     if((time_since_last_spawn += time) > time_between_rocks) {
         time_since_last_spawn -= time_between_rocks;
@@ -132,13 +135,13 @@ void RockManager::Move(duration time)
 
         if (y >= window_height)
             r.rock.setPosition(x, 0);
-        else if (y < -10)
+        else if (y < 0)
             r.rock.setPosition(x, window_height - 1);
     });
 }
 
-void RockManager::AddRockTo(std::vector<Rock>& vec, sf::Vector2f position, sf::Vector2f velocity, float angular_speed, unsigned shape_no) {
-    vec.emplace_back(position, velocity, angular_speed, shape_no);
+void RockManager::AddRockTo(std::vector<Rock>& vec, sf::Vector2f position, sf::Vector2f velocity, float angular_velocity, unsigned shape_no) {
+    vec.emplace_back(position, velocity, angular_velocity, shape_no);
 }
 
 void RockManager::AddRock() {
@@ -155,7 +158,7 @@ void RockManager::AddRock() {
     case 3: position = {xd(prng), window_height - 1 + 10}; break;
     }
 
-    AddRockTo(rocks, position, getVelocity(10, rnd_radians_dist(prng)), rnd_radians_dist(prng) / 8, 0);
+    rocks.emplace(rocks.begin(), position, getVelocity(10, rnd_radians_dist(prng)), rnd_angvel_dist(prng) / 8, 0);
 }
 
 void RockManager::Draw()

@@ -18,8 +18,12 @@ public:
         objects.emplace_back(std::make_unique<T>(std::forward<Args>(args)...));
     }
 
+    const sf::Font& getFont() const;
+
 private:
     sf::RenderWindow window;
+    sf::View view;
+    sf::Font font;
     unsigned max_bullets = 40;
     unsigned max_rocks = 20;
     std::vector<std::unique_ptr<GameObject>> objects;

@@ -7,12 +7,15 @@
 
 #include <SFML/Graphics.hpp>
 
-class Player : public GameObject {
+class GameManager;
+
+class Player : public BulletOwner {
 public:
-    Player(sf::RenderWindow& window, BulletManager&);
+    Player(GameManager&, sf::RenderWindow& window, BulletManager&);
 
     void Move(duration time) override;
     void Draw() override;
+    void AddScore(unsigned score) override;
 
     float getAngle() const;
     const sf::Vector2f& getPosition() const;
@@ -23,9 +26,10 @@ public:
 private:
     void screenWrapping();
 
+    GameManager* gameManagerPtr;
     sf::RenderWindow* windowptr;
-    float window_width;
-    float window_height;
+    sf::View view;
+    sf::FloatRect view_bounds;
     sf::Sprite player;
     sf::Texture normalTexture;
     sf::Texture firedTexture;
@@ -34,6 +38,7 @@ private:
 
     duration fire_cooldown = 0;
     BulletManager* bulletMgr;
+    unsigned score = 0;
 };
 
 #endif

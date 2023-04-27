@@ -1,5 +1,6 @@
 #pragma once
 
+#include <SFML/Graphics/Rect.hpp>
 #include <SFML/System/Vector2.hpp>
 
 #include <cmath>
@@ -18,7 +19,11 @@ T length(const sf::Vector2<T>& v) {
 }
 template<class T>
 std::ostream& operator<<(std::ostream& os, const sf::Vector2<T>& v) {
-    return os << "sf::Vector2<T>{" << v.x << ',' << v.y << "} l:" << length(v) << " l^2:" << lengthSquared(v);
+    return os << "sf::Vector2<T>{" << v.x << ',' << v.y << "} length:" << length(v) << " length^2:" << lengthSquared(v);
+}
+template<class T>
+std::ostream& operator<<(std::ostream& os, const sf::Rect<T>& r) {
+    return os << "sf::Rect<T>{" << r.left << ',' << r.top << ',' << r.width << ',' << r.height << '}';
 }
 
 // findCentroid based on

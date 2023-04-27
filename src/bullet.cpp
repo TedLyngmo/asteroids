@@ -8,7 +8,7 @@
 #include <execution>
 #include <cmath>
 
-BulletManager::Bullet::Bullet(GameObject& owner, sf::Vector2f position, sf::Vector2f speed, float angle) :
+BulletManager::Bullet::Bullet(BulletOwner& owner, sf::Vector2f position, sf::Vector2f speed, float angle) :
     //bullet(sf::Vector2f(8, 8)),
     bullet(3, 6),
     velocity(speed),
@@ -45,7 +45,7 @@ BulletManager::BulletManager(sf::RenderWindow& window) :
     window_height(window.getSize().y)
 {}
 
-void BulletManager::AddBullet(GameObject& owner, sf::Vector2f position, sf::Vector2f speed, float angle)
+void BulletManager::AddBullet(BulletOwner& owner, sf::Vector2f position, sf::Vector2f speed, float angle)
 {
     bullets.emplace_back(owner, position, speed, angle);
 }

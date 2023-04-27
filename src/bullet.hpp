@@ -12,7 +12,7 @@ class BulletManager : public GameObject {
 public:
     BulletManager(sf::RenderWindow& window);
 
-    void AddBullet(GameObject& owner, sf::Vector2f position, sf::Vector2f speed, float angle);
+    void AddBullet(BulletOwner& owner, sf::Vector2f position, sf::Vector2f speed, float angle);
 
     void Move(duration time) override;
     void Draw() override;
@@ -27,7 +27,7 @@ public:
 
 private:
     struct Bullet {
-        Bullet(GameObject& owner, sf::Vector2f position, sf::Vector2f speed, float angle);
+        Bullet(BulletOwner& owner, sf::Vector2f position, sf::Vector2f speed, float angle);
 
         void Move(duration time);
         void drawTo(sf::RenderWindow& window);
@@ -36,7 +36,7 @@ private:
         //sf::RectangleShape bullet;
         sf::CircleShape bullet;
         sf::Vector2f velocity;
-        GameObject* owner;
+        BulletOwner* owner;
     };
 
     sf::RenderWindow* windowptr;
