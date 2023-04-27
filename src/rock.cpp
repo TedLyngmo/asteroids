@@ -124,18 +124,18 @@ void RockManager::Move(duration time) {
         auto [x, y] = r.rock.getPosition();
 
         if(x > window_width) {
-            r.rock.setPosition(0, y);
+            r.rock.setPosition({0, y});
             r.aimTowards({window_width / 2, window_height / 2});
         } else if(x < 0) {
-            r.rock.setPosition(window_width - 1, y);
+            r.rock.setPosition({window_width - 1, y});
             r.aimTowards({window_width / 2, window_height / 2});
         }
 
         if(y >= window_height) {
-            r.rock.setPosition(x, 0);
+            r.rock.setPosition({x, 0});
             r.aimTowards({window_width / 2, window_height / 2});
         } else if(y < 0) {
-            r.rock.setPosition(x, window_height - 1);
+            r.rock.setPosition({x, window_height - 1});
             r.aimTowards({window_width / 2, window_height / 2});
         }
     });
