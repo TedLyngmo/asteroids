@@ -17,6 +17,7 @@ class RockManager : public GameObject {
 
         void Move(duration time);
         void drawTo(sf::RenderWindow& window);
+        void aimTowards(sf::Vector2f);
         inline bool isInside(sf::Vector2f pnt) const {
             return rock.isInside(pnt);
         }

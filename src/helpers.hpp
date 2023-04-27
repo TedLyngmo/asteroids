@@ -17,6 +17,12 @@ template<class T>
 T length(const sf::Vector2<T>& v) {
     return std::sqrt(lengthSquared(v));
 }
+
+template<class T>
+T toRadians(const sf::Vector2<T>& v) {
+    return std::atan2(v.y, v.x);
+}
+
 template<class T>
 std::ostream& operator<<(std::ostream& os, const sf::Vector2<T>& v) {
     return os << "sf::Vector2<T>{" << v.x << ',' << v.y << "} length:" << length(v) << " length^2:" << lengthSquared(v);
