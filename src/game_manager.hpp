@@ -24,8 +24,6 @@ private:
     sf::RenderWindow window;
     sf::View view;
     sf::Font font;
-    unsigned max_bullets = 40;
-    unsigned max_rocks = 20;
     std::vector<std::unique_ptr<GameObject>> objects;
     sf::Clock clock;
 };

@@ -32,4 +32,5 @@
 *.app
 asteroids
 asan
+tsan
 mkres

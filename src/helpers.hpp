@@ -1,12 +1,35 @@
 #pragma once
 
 #include <SFML/Graphics/Rect.hpp>
+#include <SFML/Graphics/View.hpp>
 #include <SFML/System/Vector2.hpp>
 
 #include <cmath>
 #include <iterator>
 #include <ostream>
 #include <type_traits>
+
+template<class T>
+struct BoundingRect {
+    BoundingRect() = default;
+    explicit constexpr BoundingRect(const sf::Rect<T>&r) : left(r.left), top(r.top), right(r.left + r.width), bottom(r.top+r.height) {}
+    explicit constexpr BoundingRect(const sf::Vector2<T>& center, const sf::Vector2<T>& size) : BoundingRect(sf::Rect<T>(sf::Vector2<T>(center.x - size.x / 2.f, center.y - size.y / 2.f), sf::Vector2<T>(size.x, size.y))) {}
+    explicit constexpr BoundingRect(const sf::View& view) : BoundingRect(view.getCenter(), view.getSize()) {}
+
+    BoundingRect& operator=(const sf::Rect<T>&r) {
+        *this = BoundingRect(r);
+        return *this;
+    }
+    BoundingRect& operator=(const sf::View& v) {
+        *this = BoundingRect(v);
+        return *this;
+    }
+
+    T left;
+    T top;
+    T right;
+    T bottom;
+};
 
 template<class T>
 T lengthSquared(const sf::Vector2<T>& v) {

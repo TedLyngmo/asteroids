@@ -20,20 +20,13 @@ sf::Texture loadTextureFromFile(const std::string& filename) {
 
 Player::Player(GameManager& gm, sf::RenderWindow& window, BulletManager& bm) :
     gameManagerPtr(&gm),
+    bulletMgr(&bm),
     windowptr(&window),
     view(window.getView()),
     normalTexture(loadTextureFromFile("content/normal.png")),
     firedTexture(loadTextureFromFile("content/fired.png")),
-    bulletMgr(&bm)
+    view_bounds(view)
 {
-    sf::Vector2f center = view.getCenter();
-    sf::Vector2f size = view.getSize();
-    view_bounds.left = center.x - size.x / 2.f;
-    view_bounds.top = center.y - size.y / 2.f;
-    view_bounds.width = size.x;
-    view_bounds.height = size.y;
-    std::cout << view_bounds << std::endl;
-
     player.setTexture(normalTexture);
     player.setScale({.2, .2});
 
@@ -43,8 +36,6 @@ Player::Player(GameManager& gm, sf::RenderWindow& window, BulletManager& bm) :
 
     auto[wwidth, wheight] = window.getSize();
     player.setPosition({wwidth / 2.f, wheight / 2.f});
-
-
 }
 
 float Player::getAngle() const
@@ -105,23 +96,23 @@ void Player::Move(duration time)
 void Player::screenWrapping()
 {
     // If player goes beyond x bounds set position to opposite site of screen
-    if (player.getPosition().x >= view_bounds.left + view_bounds.width)
+    if (player.getPosition().x >= view_bounds.right)
     {
-        player.setPosition(view_bounds.left, player.getPosition().y);
+        player.setPosition({view_bounds.left, player.getPosition().y});
     }
     else if (player.getPosition().x < view_bounds.left)
     {
-        player.setPosition(view_bounds.left + view_bounds.width - 1, player.getPosition().y);
+        player.setPosition({view_bounds.right - 1, player.getPosition().y});
     }
 
     // If player goes beyond y bounds set position to opposite site of screen
-    if (player.getPosition().y >= view_bounds.top + view_bounds.height)
+    if (player.getPosition().y >= view_bounds.bottom)
     {
-        player.setPosition(player.getPosition().x, view_bounds.top);
+        player.setPosition({player.getPosition().x, view_bounds.top});
     }
     else if (player.getPosition().y < view_bounds.top)
     {
-        player.setPosition(player.getPosition().x, view_bounds.top + view_bounds.height - 1);
+        player.setPosition({player.getPosition().x, view_bounds.bottom - 1});
     }
 }
 

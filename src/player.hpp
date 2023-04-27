@@ -2,6 +2,7 @@
 #define PLAYER_HPP
 
 #include "bullet.hpp"
+#include "helpers.hpp"
 #include "game_object.hpp"
 #include "times.hpp"
 
@@ -27,17 +28,18 @@ private:
     void screenWrapping();
 
     GameManager* gameManagerPtr;
+    BulletManager* bulletMgr;
     sf::RenderWindow* windowptr;
     sf::View view;
-    sf::FloatRect view_bounds;
     sf::Sprite player;
     sf::Texture normalTexture;
     sf::Texture firedTexture;
 
+    BoundingRect<float> view_bounds;
+
     sf::Vector2f velocity;
 
     duration fire_cooldown = 0;
-    BulletManager* bulletMgr;
     unsigned score = 0;
 };
 

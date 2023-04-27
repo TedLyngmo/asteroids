@@ -57,14 +57,16 @@ private:
     void Tick(duration time);
 
     sf::RenderWindow* windowptr;
+    sf::View view;
+    BoundingRect<float> view_bounds;
     float window_width;
     float window_height;
 
     unsigned max_rocks;
     std::vector<Rock> rocks;
 
-    duration time_since_last_spawn = 30 * 3; // spawn-a-lot
-    std::chrono::steady_clock::time_point stop_spawning_at = std::chrono::steady_clock::now() + std::chrono::seconds(60);
+    duration time_since_last_spawn = 30 * 2;
+    unsigned rocks_to_spawn = 4;
 
     static const std::array<Polygon, 8> shapes;
 };

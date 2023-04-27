@@ -13,16 +13,19 @@
 GameManager::GameManager() : 
     window([] () -> sf::RenderWindow {
         sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
-        auto screenWidth = desktop.width * 5 / 6;
         auto screenHeight = desktop.height * 5 / 6;
+        auto screenWidth = screenHeight * 4 / 3;
         return {sf::VideoMode(screenWidth, screenHeight, desktop.bitsPerPixel), "Asteroids"};
     }()),
     view(window.getDefaultView())
 {
+    if(font.loadFromMemory(memfont.data(), memfont.size())==false) {
+        std::cerr << "ERROR: Can't load font from memory." << std::endl;
+    }
+
     window.setFramerateLimit(60);
-    sf::Vector2f size = view.getSize();
-    size *= .8f;
-    view.setSize(size);
+
+    view.setSize(view.getSize() * 0.7f);
     window.setView(view);
 
     addObject<RockManager>(window, 20); // 0
@@ -40,10 +43,9 @@ void GameManager::run() {
     sf::Clock clock;
     duration time{};
 
-    font.loadFromMemory(memfont.data(), memfont.size());
 
     RockManager& rm = *static_cast<RockManager*>(objects[0].get());
-    Player& player = *static_cast<Player*>(objects[1].get());
+    //Player& player = *static_cast<Player*>(objects[1].get());
     BulletManager& bm = *static_cast<BulletManager*>(objects[2].get());
 
     sf::Event event;

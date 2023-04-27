@@ -52,16 +52,13 @@ void BulletManager::AddBullet(BulletOwner& owner, sf::Vector2f position, sf::Vec
 
 void BulletManager::Move(duration time)
 {
-    //std::for_each(std::execution::par, bullets.begin(), bullets.end(), [time](Bullet& b) {
-    //});
-
     // remove bullets that has moved out of bounds
-    auto ne = std::remove_if(std::execution::par, bullets.begin(), bullets.end(), [this,time](Bullet& b) {
+    auto newend = std::remove_if(std::execution::par, bullets.begin(), bullets.end(), [this,time](Bullet& b) {
         b.Move(time);
         auto [x, y] = b.bullet.getPosition();
         return x < 0 || x >= window_width || y < 0 || y >= window_height;
     });
-    bullets.erase(ne, bullets.end());
+    bullets.erase(newend, bullets.end());
 }
 
 void BulletManager::Draw()

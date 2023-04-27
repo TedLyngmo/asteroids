@@ -40,6 +40,10 @@ const std::array<Polygon, 8> RockManager::shapes{{
     make_Polygon(32, 9),
     make_Polygon(15, 7),
 }};
+// for each big rock there are a total of 1+2+4+8+16+32+64+128=255 rocks
+// score for one should be: 1+2*2+3*4+4*8+5*16+6*32+7*64+8*128=1793
+// 4*1793=7172
+// so why do I get 7257? 7298? 7375?
 
 static std::mt19937_64 prng(std::random_device{}());
 static std::uniform_real_distribution<float> rnd_angle_dist(0, 360);
@@ -68,10 +72,12 @@ void RockManager::Rock::drawTo(sf::RenderWindow& window) {
 
 void RockManager::Rock::aimTowards(sf::Vector2f pos) {
     auto speed = length(velocity);
-    if(speed < 5.f) speed = 5.f;
-
-    auto aim = toRadians(pos - rock.getPosition());
-    velocity = getVelocity(speed, aim + rnd_radians45_dist(prng));
+    if(speed < 10) speed = 10;
+    auto aimvec = pos - rock.getPosition();
+    auto aimvel = getVelocity(speed, toRadians(aimvec));
+    velocity *= 2.f;
+    velocity += aimvel;
+    velocity *= 0.3333333333333f;
 }
 
 // -----------------------------------------------------------------------------
@@ -87,7 +93,7 @@ static inline float length(const sf::Vector2f& v) {
 void RockManager::update() {
     std::vector<Rock> new_rocks;
 
-    std::erase_if(rocks, [&](Rock& rock) {
+    auto removed = std::erase_if(rocks, [&](Rock& rock) {
         if(not rock.is_hit) return false;
 
         if(rock.shape + 1 < RockManager::shapes.size()) {
@@ -101,17 +107,23 @@ void RockManager::update() {
     });
     for(auto& r : new_rocks) r.Move(duration{0.3});
     rocks.insert(rocks.end(), new_rocks.begin(), new_rocks.end());
+    if(removed) std::cout << "rocks alive: " << rocks.size() << std::endl;
 }
 
-RockManager::RockManager(sf::RenderWindow& window, unsigned MaxRocks) : windowptr(&window), window_width(window.getSize().x), window_height(window.getSize().y), max_rocks(MaxRocks) {}
+RockManager::RockManager(sf::RenderWindow& window, unsigned MaxRocks) :
+    windowptr(&window), view(window.getView()), view_bounds(view), window_width(window.getSize().x), window_height(window.getSize().y), max_rocks(MaxRocks)
+{
+    rocks.reserve(500);
+}
 
 void RockManager::Tick(duration time) {
-    if(std::chrono::steady_clock::now() > stop_spawning_at) return;
+    if(!rocks_to_spawn) return;
 
     constexpr float time_between_rocks = 30.f; // seconds
     if((time_since_last_spawn += time) > time_between_rocks) {
         time_since_last_spawn -= time_between_rocks;
         AddRock();
+        --rocks_to_spawn;
     }
 }
 
@@ -121,21 +133,22 @@ void RockManager::Move(duration time) {
     std::for_each(std::execution::par, rocks.begin(), rocks.end(), [this, time](Rock& r) {
         r.Move(time);
 
-        auto [x, y] = r.rock.getPosition();
+        auto [x,y] = r.rock.getPosition();
+        auto rb = r.rock.getGlobalBounds();
 
-        if(x > window_width) {
-            r.rock.setPosition({0, y});
+        if(rb.left >= view_bounds.right) {
+            r.rock.setPosition({view_bounds.left - rb.width/2, y});
             r.aimTowards({window_width / 2, window_height / 2});
-        } else if(x < 0) {
-            r.rock.setPosition({window_width - 1, y});
+        } else if(rb.left + rb.width < view_bounds.left) {
+            r.rock.setPosition({view_bounds.right - 1 + rb.width/2, y});
             r.aimTowards({window_width / 2, window_height / 2});
         }
 
-        if(y >= window_height) {
-            r.rock.setPosition({x, 0});
+        if(rb.top >= view_bounds.bottom) {
+            r.rock.setPosition({x, view_bounds.top - rb.height/2});
             r.aimTowards({window_width / 2, window_height / 2});
-        } else if(y < 0) {
-            r.rock.setPosition({x, window_height - 1});
+        } else if(rb.top + rb.height < view_bounds.top) {
+            r.rock.setPosition({x, view_bounds.bottom - 1 + rb.height/2});
             r.aimTowards({window_width / 2, window_height / 2});
         }
     });
@@ -154,20 +167,21 @@ void RockManager::AddRock() {
 
     switch(side(prng)) {
     case 0:
-        position = {-10, yd(prng)};
+        position = {0, yd(prng)};
         break;
     case 1:
-        position = {window_width - 1 + 10, yd(prng)};
+        position = {window_width - 1, yd(prng)};
         break;
     case 2:
-        position = {xd(prng), -10};
+        position = {xd(prng), 0};
         break;
     case 3:
-        position = {xd(prng), window_height - 1 + 10};
+        position = {xd(prng), window_height - 1};
         break;
     }
 
     rocks.emplace(rocks.begin(), position, getVelocity(10, rnd_radians_dist(prng)), rnd_angvel_dist(prng) / 8, 0);
+    rocks.back().aimTowards({window_width / 2, window_height / 2});
 }
 
 void RockManager::Draw() {
