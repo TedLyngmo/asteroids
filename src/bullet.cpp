@@ -41,8 +41,8 @@ void BulletManager::Bullet::drawTo(sf::RenderWindow& window)
 
 BulletManager::BulletManager(sf::RenderWindow& window) :
     windowptr(&window),
-    window_width(window.getSize().x),
-    window_height(window.getSize().y)
+    window_width(static_cast<float>(window.getSize().x)),
+    window_height(static_cast<float>(window.getSize().y))
 {}
 
 void BulletManager::AddBullet(BulletOwner& owner, sf::Vector2f position, sf::Vector2f speed, float angle)

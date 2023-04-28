@@ -28,7 +28,7 @@ Player::Player(GameManager& gm, sf::RenderWindow& window, BulletManager& bm) :
     view_bounds(view)
 {
     player.setTexture(normalTexture);
-    player.setScale({.2, .2});
+    player.setScale({.2f, .2f});
 
     //auto [left, top, pwidth, pheight] = player.getGlobalBounds();
     auto [left, top, pwidth, pheight] = player.getLocalBounds();

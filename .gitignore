@@ -26,6 +26,13 @@
 *.a
 *.lib
 
+# MSVC
+.vs
+Debug
+Release
+x86
+x64
+
 # Executables
 *.exe
 *.out

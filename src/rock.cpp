@@ -12,7 +12,7 @@
 #include <random>
 
 static std::mt19937_64 no_random(3);                             // make sure the rocks always looks the same
-static std::uniform_real_distribution<float> rfactor(.90, 1.10); // to not just have boring circles
+static std::uniform_real_distribution<float> rfactor(.90f, 1.10f); // to not just have boring circles
 
 sf::Vector2f getVelocity(float speed, float direction_radians) {
     return {speed * std::cos(direction_radians), speed * std::sin(direction_radians)};
@@ -45,17 +45,21 @@ const std::array<Polygon, 8> RockManager::shapes{{
 // 4*1793=7172
 
 static std::mt19937_64 prng(std::random_device{}());
-static std::uniform_real_distribution<float> rnd_angle_dist(0, 360);
+static std::uniform_real_distribution<float> rnd_angle_dist(0.f, 360.f);
 static std::uniform_real_distribution<float> rnd_radians_dist(-pi, pi);
 static std::uniform_real_distribution<float> rnd_radians45_dist(-pi/4.f, pi/4.f);
 static std::uniform_real_distribution<float> rnd_angvel_dist(-27.5f, 27.5f);
-static std::uniform_real_distribution<float> rnd_color_dist(-5, 5);
+static std::uniform_int_distribution<int> rnd_color_dist(-5, 5);
+
+std::uint8_t rndcolor(unsigned shape_no) {
+    return static_cast<std::uint8_t>(120 + shape_no * 10 + rnd_color_dist(prng));
+}
 
 RockManager::Rock::Rock(sf::Vector2f position, sf::Vector2f velocity, float angular_velocity, unsigned shape_no) :
     rock(RockManager::shapes[shape_no]), velocity(velocity), angular_velocity(angular_velocity), shape{shape_no} {
     rock.setRotation(rnd_angle_dist(prng));
 
-    rock.setFillColor(sf::Color(120 + shape_no * 10 + rnd_color_dist(prng), 120 + shape_no * 10 + rnd_color_dist(prng), 120 + shape_no * 10 + rnd_color_dist(prng)));
+    rock.setFillColor(sf::Color(rndcolor(shape_no), rndcolor(shape_no), rndcolor(shape_no)));
 
     rock.setPosition(position);
 }
@@ -113,7 +117,7 @@ void RockManager::update() {
 }
 
 RockManager::RockManager(sf::RenderWindow& window, unsigned MaxRocks) :
-    windowptr(&window), view(window.getView()), view_bounds(view), window_width(window.getSize().x), window_height(window.getSize().y), max_rocks(MaxRocks)
+    windowptr(&window), view(window.getView()), view_bounds(view), window_width(static_cast<float>(window.getSize().x)), window_height(static_cast<float>(window.getSize().y)), max_rocks(MaxRocks)
 {
     rocks.reserve(500);
 }
