@@ -43,7 +43,6 @@ const std::array<Polygon, 8> RockManager::shapes{{
 // for each big rock there are a total of 1+2+4+8+16+32+64+128=255 rocks
 // score for one should be: 1+2*2+3*4+4*8+5*16+6*32+7*64+8*128=1793
 // 4*1793=7172
-// so why do I get 7257? 7298? 7375?
 
 static std::mt19937_64 prng(std::random_device{}());
 static std::uniform_real_distribution<float> rnd_angle_dist(0, 360);
@@ -82,8 +81,11 @@ void RockManager::Rock::aimTowards(sf::Vector2f pos) {
 
 // -----------------------------------------------------------------------------
 
-void RockManager::hit(Rock& rock) {
-    rock.is_hit = true;
+void RockManager::hit(Rock& rock, BulletOwner& bo) {
+    if(not rock.is_hit) {
+        rock.is_hit = true;
+        bo.AddScore(rock.shape + 1);
+    }
 }
 
 static inline float length(const sf::Vector2f& v) {

@@ -42,7 +42,7 @@ public:
         return rocks.end();
     }
 
-    void hit(Rock& r);
+    void hit(Rock& r, BulletOwner& bo);
 
     void update();
 

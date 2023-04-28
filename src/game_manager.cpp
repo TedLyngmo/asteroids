@@ -67,8 +67,7 @@ void GameManager::run() {
         for(auto& rock : rm) {
             bm.erase_if([&](const auto& bullet) {
                 if(rock.isInside(bullet.getPosition())) {
-                    bullet.owner->AddScore(rock.shape+1);
-                    rm.hit(rock);
+                    rm.hit(rock, *bullet.owner);
                     return true;
                 }
                 return false;
