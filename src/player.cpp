@@ -8,6 +8,7 @@
 
 #include <cmath>
 #include <iostream>
+#include <random>
 #include <stdexcept>
 
 sf::Texture loadTextureFromFile(const std::string& filename) {
@@ -24,7 +25,7 @@ Player::Player(GameManager& gm, sf::RenderWindow& window, BulletManager& bm) :
     windowptr(&window),
     view(window.getView()),
     normalTexture(loadTextureFromFile("content/normal.png")),
-    firedTexture(loadTextureFromFile("content/fired.png")),
+    firedTexture{loadTextureFromFile("content/fired1.png"), loadTextureFromFile("content/fired2.png")},
     view_bounds(view)
 {
     player.setTexture(normalTexture);
@@ -55,6 +56,8 @@ bool Player::handleEvent([[maybe_unused]] const sf::Event& ev) {
     return false;
 }
 
+static std::minstd_rand prng(std::random_device{}());
+static std::bernoulli_distribution fire_dist{};
 
 void Player::Move(duration time)
 {
@@ -73,7 +76,7 @@ void Player::Move(duration time)
 
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
     {
-        player.setTexture(firedTexture);
+        player.setTexture(firedTexture[fire_dist(prng)]);
         auto angle = player.getRotation() * pi / 180;
         float tfact = time * 25;
         velocity += sf::Vector2f(std::cos(angle), std::sin(angle)) * tfact;

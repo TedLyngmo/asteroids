@@ -8,6 +8,8 @@
 
 #include <SFML/Graphics.hpp>
 
+#include <array>
+
 class GameManager;
 
 class Player : public BulletOwner {
@@ -33,7 +35,7 @@ private:
     sf::View view;
     sf::Sprite player;
     sf::Texture normalTexture;
-    sf::Texture firedTexture;
+    std::array<sf::Texture, 2> firedTexture;
 
     BoundingRect<float> view_bounds;
 

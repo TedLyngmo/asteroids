@@ -8,6 +8,11 @@
 #include <utility>
 #include <vector>
 
+class Fx : public GameObject, public sf::Shape {
+public:
+    Fx(sf::Vector2f position, sf::Vector2f speed, float angle);
+};
+
 class FxManager : public GameObject {
 public:
     FxManager(sf::RenderWindow& window);
@@ -21,19 +26,6 @@ public:
     inline auto end() { return bullets.end(); }
 
 private:
-    struct Bullet {
-        Bullet(BulletOwner& owner, sf::Vector2f position, sf::Vector2f speed, float angle);
-
-        void Move(duration time);
-        void drawTo(sf::RenderWindow& window);
-        inline sf::Vector2f getPosition() const { return bullet.getPosition(); }
-
-        //sf::RectangleShape bullet;
-        sf::CircleShape bullet;
-        sf::Vector2f velocity;
-        BulletOwner* owner;
-    };
-
     sf::RenderWindow* windowptr;
     float window_width;
     float window_height;

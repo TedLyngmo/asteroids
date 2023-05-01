@@ -28,7 +28,7 @@ int cppmain(std::string_view prog, std::vector<std::string> args) {
         os << std::hex << std::setfill('0');
 
         os << R"aw(#include "res.h")aw" << "\n\n"
-              R"aw(const unsigned char res[] = {)aw" << '\n';
+              R"aw(static constexpr unsigned char res[] = {)aw" << '\n';
 
         auto io = [&](bool c, int i) {
             auto ch = is.get();
@@ -40,7 +40,7 @@ int cppmain(std::string_view prog, std::vector<std::string> args) {
             return true;
         };
         if(io(false, 0)) {
-            for(int ch, i = 1; io(true, i);) {
+            for(int i = 1; io(true, i);) {
                 ++i;
             }
         }
