@@ -13,8 +13,15 @@
 GameManager::GameManager() : 
     window([] () -> sf::RenderWindow {
         sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
-        auto screenHeight = desktop.height * 5 / 6;
-        auto screenWidth = screenHeight * 4 / 3;
+        unsigned screenWidth;
+        unsigned screenHeight;
+        if(desktop.width > desktop.height) {
+            screenHeight = desktop.height * 19 / 20;
+            screenWidth = screenHeight * 4 / 3;
+        } else {
+            screenWidth = desktop.width;
+            screenHeight = screenWidth * 3 / 4;
+        }
         return {sf::VideoMode(screenWidth, screenHeight, desktop.bitsPerPixel), "Asteroids"};
     }()),
     view(window.getDefaultView())

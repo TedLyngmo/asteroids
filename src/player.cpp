@@ -122,14 +122,21 @@ void Player::AddScore(unsigned s) {
 
 void Player::Draw()
 {
-    sf::Text txt(std::to_string(score), gameManagerPtr->getFont(), 30);
-    auto tb = txt.getGlobalBounds();
-
     sf::Vector2f wc = view.getCenter();
     sf::Vector2f ws = view.getSize();
 
-    txt.setPosition({wc.x - tb.width/2.f, wc.y - ws.y/2});
+    /*
+    sf::Text scoret("Score", gameManagerPtr->getFont(), 20);
+    scoret.setColor({250u,250u,250u,127u});
+    auto scob = scoret.getGlobalBounds();
+    scoret.setPosition({wc.x - scob.width/2.f, wc.y - ws.y/2});
+    */
 
-    windowptr->draw(txt);
+    sf::Text num(std::to_string(score), gameManagerPtr->getFont(), 30);
+    auto numb = num.getGlobalBounds();
+    num.setPosition({wc.x - numb.width/2.f, wc.y - ws.y/2});
+
+    //windowptr->draw(scoret);
+    windowptr->draw(num);
     windowptr->draw(player);
 }
