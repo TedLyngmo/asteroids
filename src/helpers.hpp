@@ -1,11 +1,15 @@
 #pragma once
 
 #include <SFML/Graphics/Rect.hpp>
+#include <SFML/Graphics/Shape.hpp>
 #include <SFML/Graphics/View.hpp>
 #include <SFML/System/Vector2.hpp>
 
+#include <algorithm>
+#include <cassert>
 #include <cmath>
 #include <iterator>
+#include <optional>
 #include <ostream>
 #include <type_traits>
 
@@ -55,38 +59,97 @@ std::ostream& operator<<(std::ostream& os, const sf::Rect<T>& r) {
     return os << "sf::Rect<T>{" << r.left << ',' << r.top << ',' << r.width << ',' << r.height << '}';
 }
 
-// findCentroid based on
-// https://stackoverflow.com/a/33852627/7582247
-template<class Iter, class V2 = typename std::iterator_traits<Iter>::value_type>
-V2 findCentroid(Iter first, Iter last) {
-    if(first == last) return V2{};                   // {0,0} or throw or leave UB
+template <typename T>
+constexpr T cross(const sf::Vector2<T>& lhs, const sf::Vector2<T>& rhs) {
+    return lhs.x * rhs.y - lhs.y * rhs.x;
+}
 
-    if(auto next = std::next(first); next == last) { // a single point
-        return *first;
-    } else if(std::next(next) == last) {             // a line
-        const auto& [x1, y1] = *first;
-        const auto& [x2, y2] = *next;
-        return V2{(x1 + x2) / 2, (y1 + y2) / 2};     // midpoint of the line
+inline sf::Vector2f getCentroid(const sf::Shape& shape) {
+    const auto count = shape.getPointCount();
+
+    switch (count) {
+        case 0:
+            assert(false);
+            return {};
+        case 1:
+            return shape.getPoint(0);
+        case 2:
+            return (shape.getPoint(0) + shape.getPoint(1)) / 2.f;
+        default: // more than two points
+            sf::Vector2f centroid;
+            float    twiceArea = 0;
+
+            auto previousPoint = shape.getPoint(count - 1);
+            for (std::size_t i = 0; i < count; ++i)
+            {
+                const auto  currentPoint = shape.getPoint(i);
+                const float product      = cross(previousPoint, currentPoint);
+                twiceArea += product;
+                centroid += (currentPoint + previousPoint) * product;
+
+                previousPoint = currentPoint;
+            }
+
+            if (twiceArea != 0.f) {
+                return centroid / 3.f / twiceArea;
+            }
+
+            // Fallback for no area - find the center of the bounding box
+            auto minPoint = shape.getPoint(0);
+            auto maxPoint = minPoint;
+            for (std::size_t i = 1; i < count; ++i) {
+                const auto currentPoint = shape.getPoint(i);
+                minPoint.x              = std::min(minPoint.x, currentPoint.x);
+                maxPoint.x              = std::max(maxPoint.x, currentPoint.x);
+                minPoint.y              = std::min(minPoint.y, currentPoint.y);
+                maxPoint.y              = std::max(maxPoint.y, currentPoint.y);
+            }
+            return (maxPoint + minPoint) / 2.f;
+    }
+}
+
+template<class T>
+struct Line {
+    sf::Vector2<T> A;
+    sf::Vector2<T> B;
+};
+
+template<class T>
+constexpr bool intersects(const Line<T>& ln1, const Line<T>& ln2) {
+    // Calculate the cross product of the vectors formed by each line.
+    const sf::Vector2<T> P2BA = ln2.B - ln2.A;
+    const T crossProduct1 = cross(P2BA, ln1.A - ln2.A);
+    const T crossProduct2 = cross(P2BA, ln1.B - ln2.A);
+    constexpr T Zero{};
+
+    // Check if the signs of the cross products are different or
+    // if any of the endpoints of one line lie on the other line.
+    return ((crossProduct1 > Zero && crossProduct2 < Zero) || (crossProduct1 < Zero && crossProduct2 > Zero))
+        || (crossProduct1 == Zero && std::min(ln2.A.x, ln2.B.x) <= ln1.A.x && ln1.A.x <= std::max(ln2.A.x, ln2.B.x) && std::min(ln2.A.y, ln2.B.y) <= ln1.A.y && ln1.A.y <= std::max(ln2.A.y, ln2.B.y))
+        || (crossProduct2 == Zero && std::min(ln2.A.x, ln2.B.x) <= ln1.B.x && ln1.B.x <= std::max(ln2.A.x, ln2.B.x) && std::min(ln2.A.y, ln2.B.y) <= ln1.B.y && ln1.B.y <= std::max(ln2.A.y, ln2.B.y));
+}
+
+template<class T>
+constexpr std::optional<sf::Vector2<T>> intersection_point(const Line<T>& ln1, const Line<T>& ln2) {
+    // Calculate the cross product of the vectors formed by each line.
+    const sf::Vector2<T> P2BA = ln2.B - ln2.A;
+    const T crossProduct1 = cross(P2BA, ln1.A - ln2.A);
+    const T crossProduct2 = cross(P2BA, ln1.B - ln2.A);
+    constexpr T Zero{};
+
+    // Check if the signs of the cross products are different
+    if (!((crossProduct1 > Zero && crossProduct2 < Zero) || (crossProduct1 < Zero && crossProduct2 > Zero))) return std::nullopt;
+
+    // Calculate the intersection point.
+    float denom = (ln1.A.x - ln1.B.x) * (ln2.A.y - ln2.B.y) - (ln1.A.y - ln1.B.y) * (ln2.A.x - ln2.B.x);
+
+    if (denom == T{}) {
+        // parallel, no intersection point.
+        return std::nullopt;
     }
 
-    // three or more points:
-    const auto& [offx, offy] = *first;
-    using T1 = std::remove_cvref_t<decltype(offx)>;
-    using T2 = std::remove_cvref_t<decltype(offy)>;
-    T1 x{};
-    T2 y{};
-    decltype((x * y) - (x * y)) twicearea{}, f;
-
-    for(auto prev = std::prev(last); first != last; prev = first++) {
-        const auto& [p1x, p1y] = *first;
-        const auto& [p2x, p2y] = *prev;
-        f = (p1x - offx) * (p2y - offy) - (p2x - offx) * (p1y - offy);
-        twicearea += f;
-        x += (p1x + p2x - 2 * offx) * f;
-        y += (p1y + p2y - 2 * offy) * f;
-    }
-
-    f = twicearea * 3;
-
-    return V2{static_cast<T1>(x / f + offx), static_cast<T2>(y / f + offy)};
+    float parameterized_distance = ((ln1.A.x - ln2.A.x) * (ln2.A.y - ln2.B.y) - (ln1.A.y - ln2.A.y) * (ln2.A.x - ln2.B.x)) / denom;
+    float x = ln1.A.x + parameterized_distance * (ln1.B.x - ln1.A.x);
+    float y = ln1.A.y + parameterized_distance * (ln1.B.y - ln1.A.y);
+    return sf::Vector2f{x, y};
 }

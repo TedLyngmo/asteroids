@@ -20,7 +20,7 @@ public:
         for(auto curr = first; curr != last; ++curr, ++idx) {
             setPoint(idx, *curr);
         }
-        setOrigin(findCentroid(first, last));
+        setOrigin(getCentroid(*this));
     }
 
     inline Polygon(std::initializer_list<sf::Vector2f> pnts) : Polygon(pnts.begin(), pnts.end()) {}
@@ -68,7 +68,7 @@ public:
     inline bool isInside(sf::Vector2f point) const {
         sf::FloatRect rect = getGlobalBounds();
         if(not rect.contains(point)) return false;
-        Transpose();
+        Transform();
         return wn_PnPoly(point) != 0;
     }
 
@@ -78,7 +78,7 @@ public:
     }
 
 private:
-    inline void Transpose() const {
+    inline void Transform() const {
         const auto& trans = getTransform();
 
         for(std::size_t idx = 0, cnt = getPointCount(); idx < cnt; ++idx) {
