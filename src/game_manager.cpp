@@ -50,13 +50,12 @@ void GameManager::run() {
     sf::Clock clock;
     duration time{};
 
-
     RockManager& rm = *static_cast<RockManager*>(objects[0].get());
-    //Player& player = *static_cast<Player*>(objects[1].get());
+    Player& player = *static_cast<Player*>(objects[1].get());
     BulletManager& bm = *static_cast<BulletManager*>(objects[2].get());
 
     sf::Event event;
-    while (window.isOpen()) {
+    while (window.isOpen() && player.isAlive()) {
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed) window.close();
             //player.handleEvent(event);
@@ -81,6 +80,13 @@ void GameManager::run() {
             });
         }
         rm.update();
+        for(auto& rock : rm) {
+            if(rock.intersects(player)){
+                auto impulse = getCollisionImpulseVector(rock, player);
+                rock.applyForce(impulse);
+                player.applyForce(-impulse);
+            }
+        }
         //----
         time = clock.restart().asSeconds();
     }

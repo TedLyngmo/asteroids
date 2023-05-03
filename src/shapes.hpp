@@ -4,12 +4,17 @@
 
 #include <SFML/Graphics.hpp>
 
+#include "helpers.hpp"
+#include "pi.hpp"
+
 #include <cstddef>
 #include <initializer_list>
 #include <iterator>
 #include <utility>
 #include <vector>
 #include <ostream>
+
+#include <iostream>
 
 class Polygon : public sf::ConvexShape {
 public:
@@ -21,6 +26,15 @@ public:
             setPoint(idx, *curr);
         }
         setOrigin(getCentroid(*this));
+        // circumference
+        float C = 0.f;
+        for(auto prev = std::prev(last), curr = first; curr != last; prev = curr++) {
+            C += length(*curr - *prev);
+        }
+        // radius
+        auto r = C / twopi;
+        // volume
+        volume = r * r * r * pi * 4.f / 3.f;
     }
 
     inline Polygon(std::initializer_list<sf::Vector2f> pnts) : Polygon(pnts.begin(), pnts.end()) {}
@@ -72,18 +86,54 @@ public:
         return wn_PnPoly(point) != 0;
     }
 
+    inline float getVolume() const { return volume; }
+
+public:
+    template<class Shapeish>
+    bool intersects(const Shapeish& s) const {
+        if(not getGlobalBounds().intersects(s.getGlobalBounds())) return false;
+
+        auto count = s.getPointCount();
+        if(count < 2) return false;
+        Transform();
+        auto prev = s.getPoint(count - 1);
+        for(std::size_t i = 0; i < count; ++i) {
+            if(wn_PnPoly(prev)) return true;
+            auto curr = s.getPoint(i);
+            if(intersects_line(Line<float>{prev, curr})) return true;
+            prev = curr;
+        }
+        return false;
+    }
+
     inline friend std::ostream& operator<<(std::ostream& os, const Polygon& p) {
         auto pos = p.getPosition();
         return os << "Polygon{" << pos.x << ',' << pos.y << '}';
     }
 
 private:
+    float volume;
+
+    template<class T>
+    constexpr bool intersects_line(const Line<T>& line) const {
+        auto prev = tpnts.back();
+        for(auto& curr : tpnts) {
+            if(line_intersects(line, Line<float>{prev, curr})) return true;
+            prev = curr;
+        }
+        return false;
+    }
+
     inline void Transform() const {
         const auto& trans = getTransform();
+        if(m_trans == trans) return;
+        m_trans = trans;
 
         for(std::size_t idx = 0, cnt = getPointCount(); idx < cnt; ++idx) {
-            tpnts[idx] = trans.transformPoint(getPoint(idx));
+            tpnts[idx] = m_trans.transformPoint(getPoint(idx));
         }
     }
+
     mutable std::vector<sf::Vector2f> tpnts;
+    mutable sf::Transform m_trans;
 };

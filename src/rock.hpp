@@ -22,6 +22,19 @@ class RockManager : public GameObject {
             return rock.isInside(pnt);
         }
 
+        template<class Shape>
+        bool intersects(const Shape& s) {
+            return rock.intersects(s);
+        }
+
+        inline sf::Vector2f getPosition() const { return rock.getPosition(); }
+        inline sf::Vector2f getVelocity() const { return velocity; }
+        inline float getVolume() const { return rock.getVolume(); }
+        inline float getMass() const { return getVolume(); }
+        inline void  applyForce(const sf::Vector2f& impulse) {
+            velocity += impulse / getMass();
+        }
+
         Polygon rock;
         sf::Vector2f velocity;
         float angular_velocity;

@@ -35,9 +35,19 @@ struct BoundingRect {
     T bottom;
 };
 
+template <typename T>
+constexpr T cross(const sf::Vector2<T>& lhs, const sf::Vector2<T>& rhs) {
+    return lhs.x * rhs.y - lhs.y * rhs.x;
+}
+
+template <typename T>
+constexpr T dot(const sf::Vector2<T>& lhs, const sf::Vector2<T>& rhs) {
+    return lhs.x * rhs.x + lhs.y * rhs.y;
+}
+
 template<class T>
 T lengthSquared(const sf::Vector2<T>& v) {
-    return v.x * v.x + v.y * v.y;
+    return dot(v, v);
 }
 
 template<class T>
@@ -46,22 +56,44 @@ T length(const sf::Vector2<T>& v) {
 }
 
 template<class T>
+T distanceSquared(const sf::Vector2<T>& lhs, const sf::Vector2<T>& rhs) {
+    return lengthSquared(lhs - rhs);
+}
+
+template<class T>
+T distance(const sf::Vector2<T>& lhs, const sf::Vector2<T>& rhs) {
+    return std::sqrt(distanceSquared(lhs, rhs));
+}
+
+template<class T>
+sf::Vector2<T> normalize(const sf::Vector2<T>& v) {
+    return v / length(v);
+}
+
+template<class T>
 T toRadians(const sf::Vector2<T>& v) {
     return std::atan2(v.y, v.x);
 }
 
 template<class T>
+struct Line {
+    sf::Vector2<T> A;
+    sf::Vector2<T> B;
+};
+
+template<class T>
 std::ostream& operator<<(std::ostream& os, const sf::Vector2<T>& v) {
-    return os << "sf::Vector2<T>{" << v.x << ',' << v.y << "} length:" << length(v) << " length^2:" << lengthSquared(v);
+    return os << "sf::Vector2<T>{" << v.x << ',' << v.y << '}'; // "} length:" << length(v) << " length^2:" << lengthSquared(v);
 }
+
+template<class T>
+std::ostream& operator<<(std::ostream& os, const Line<T>& l) {
+    return os << "Line<T>{{" << l.A << "}, {" << l.B << "}}";
+}
+
 template<class T>
 std::ostream& operator<<(std::ostream& os, const sf::Rect<T>& r) {
     return os << "sf::Rect<T>{" << r.left << ',' << r.top << ',' << r.width << ',' << r.height << '}';
-}
-
-template <typename T>
-constexpr T cross(const sf::Vector2<T>& lhs, const sf::Vector2<T>& rhs) {
-    return lhs.x * rhs.y - lhs.y * rhs.x;
 }
 
 inline sf::Vector2f getCentroid(const sf::Shape& shape) {
@@ -109,47 +141,44 @@ inline sf::Vector2f getCentroid(const sf::Shape& shape) {
 }
 
 template<class T>
-struct Line {
-    sf::Vector2<T> A;
-    sf::Vector2<T> B;
-};
-
-template<class T>
-constexpr bool intersects(const Line<T>& ln1, const Line<T>& ln2) {
+constexpr bool line_intersects(const Line<T>& ln1, const Line<T>& ln2) {
+    constexpr T Zero{};
     // Calculate the cross product of the vectors formed by each line.
     const sf::Vector2<T> P2BA = ln2.B - ln2.A;
     const T crossProduct1 = cross(P2BA, ln1.A - ln2.A);
     const T crossProduct2 = cross(P2BA, ln1.B - ln2.A);
-    constexpr T Zero{};
 
-    // Check if the signs of the cross products are different or
-    // if any of the endpoints of one line lie on the other line.
-    return ((crossProduct1 > Zero && crossProduct2 < Zero) || (crossProduct1 < Zero && crossProduct2 > Zero))
-        || (crossProduct1 == Zero && std::min(ln2.A.x, ln2.B.x) <= ln1.A.x && ln1.A.x <= std::max(ln2.A.x, ln2.B.x) && std::min(ln2.A.y, ln2.B.y) <= ln1.A.y && ln1.A.y <= std::max(ln2.A.y, ln2.B.y))
-        || (crossProduct2 == Zero && std::min(ln2.A.x, ln2.B.x) <= ln1.B.x && ln1.B.x <= std::max(ln2.A.x, ln2.B.x) && std::min(ln2.A.y, ln2.B.y) <= ln1.B.y && ln1.B.y <= std::max(ln2.A.y, ln2.B.y));
-}
+    // Check if the signs of the cross products are different and
+    // if the intersection point lies within both line segments.
+    if ((crossProduct1 > Zero && crossProduct2 < Zero) || (crossProduct1 < Zero && crossProduct2 > Zero)) {
+        const sf::Vector2<T> P1BA = ln1.B - ln1.A;
+        const T crossProduct3 = cross(P1BA, ln2.A - ln1.A);
+        const T crossProduct4 = cross(P1BA, ln2.B - ln1.A);
 
-template<class T>
-constexpr std::optional<sf::Vector2<T>> intersection_point(const Line<T>& ln1, const Line<T>& ln2) {
-    // Calculate the cross product of the vectors formed by each line.
-    const sf::Vector2<T> P2BA = ln2.B - ln2.A;
-    const T crossProduct1 = cross(P2BA, ln1.A - ln2.A);
-    const T crossProduct2 = cross(P2BA, ln1.B - ln2.A);
-    constexpr T Zero{};
-
-    // Check if the signs of the cross products are different
-    if (!((crossProduct1 > Zero && crossProduct2 < Zero) || (crossProduct1 < Zero && crossProduct2 > Zero))) return std::nullopt;
-
-    // Calculate the intersection point.
-    float denom = (ln1.A.x - ln1.B.x) * (ln2.A.y - ln2.B.y) - (ln1.A.y - ln1.B.y) * (ln2.A.x - ln2.B.x);
-
-    if (denom == T{}) {
-        // parallel, no intersection point.
-        return std::nullopt;
+        if ((crossProduct3 > Zero && crossProduct4 < Zero) || (crossProduct3 < Zero && crossProduct4 > Zero)) {
+            return true;
+        }
     }
 
-    float parameterized_distance = ((ln1.A.x - ln2.A.x) * (ln2.A.y - ln2.B.y) - (ln1.A.y - ln2.A.y) * (ln2.A.x - ln2.B.x)) / denom;
-    float x = ln1.A.x + parameterized_distance * (ln1.B.x - ln1.A.x);
-    float y = ln1.A.y + parameterized_distance * (ln1.B.y - ln1.A.y);
-    return sf::Vector2f{x, y};
+    return false;
+}
+
+template<class MassObject1, class MassObject2>
+constexpr sf::Vector2f getCollisionImpulseVector(MassObject1& lhs, MassObject2& rhs, float e = 1.0f) { // e = coefficient of restitution
+    const auto delta = lhs.getPosition() - rhs.getPosition();
+    //const auto distance_squared = lengthSquared(delta);
+    //const auto radius_sum_squared = (lhs.getRadius() + rhs.getRadius()) * (lhs.getRadius() + rhs.getRadius());
+
+    //if(distance_squared <= radius_sum_squared) { // objects have collided
+        const auto collision_normal = normalize(delta);
+        const auto relative_velocity = lhs.getVelocity() - rhs.getVelocity();
+        const auto closing_velocity = dot(relative_velocity, collision_normal);
+
+        if(closing_velocity < 0.f) { // objects are moving towards each other
+            const auto impulse_magnitude = -(1.f + e) * closing_velocity * lhs.getMass() * rhs.getMass() / (lhs.getMass() + rhs.getMass());
+            const auto impulse = impulse_magnitude * collision_normal;
+            return impulse;
+        }
+    //}
+    return {};
 }

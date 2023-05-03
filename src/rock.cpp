@@ -77,7 +77,7 @@ void RockManager::Rock::aimTowards(sf::Vector2f pos) {
     auto speed = length(velocity);
     if(speed < 10) speed = 10;
     auto aimvec = pos - rock.getPosition();
-    auto aimvel = getVelocity(speed, toRadians(aimvec));
+    auto aimvel = ::getVelocity(speed, toRadians(aimvec));
     velocity *= 2.f;
     velocity += aimvel;
     velocity *= 0.3333333333333f;
@@ -106,7 +106,6 @@ void RockManager::update() {
             auto velocity = rock.velocity * 1.1f + getVelocity(3, rnd_radians_dist(prng));
             auto ang_speed = rnd_angvel_dist(prng);
             AddRockTo(new_rocks, rock.rock.getPosition(), velocity, ang_speed, rock.shape + 1);
-            // if(rock.shape + 2 < RockManager::shapes.size())
             AddRockTo(new_rocks, rock.rock.getPosition(), velocity, ang_speed, rock.shape + 1);
         }
         return true;

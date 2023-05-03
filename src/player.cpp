@@ -11,6 +11,24 @@
 #include <random>
 #include <stdexcept>
 
+std::size_t GhostSprite::getPointCount() const {
+    return 3;
+}
+
+sf::Vector2f GhostSprite::getPoint(std::size_t index) const {
+    const sf::FloatRect& gb = getLocalBounds();
+    const sf::Transform& trans = getTransform();
+
+    switch(index) {
+        case 0: return trans.transformPoint(sf::Vector2f(gb.left, gb.top));
+        case 1: return trans.transformPoint(sf::Vector2f(gb.left + gb.width, gb.top + gb.height/2.f));
+        case 2: return trans.transformPoint(sf::Vector2f(gb.left, gb.top + gb.height));
+    default:
+        return {};
+    }
+}
+
+
 sf::Texture loadTextureFromFile(const std::string& filename) {
     sf::Texture rv;
     if(!rv.loadFromFile(filename)) {
@@ -79,17 +97,27 @@ void Player::Move(duration time)
         player.setTexture(firedTexture[fire_dist(prng)]);
         auto angle = player.getRotation() * pi / 180;
         float tfact = time * 25;
-        velocity += sf::Vector2f(std::cos(angle), std::sin(angle)) * tfact;
-        auto speed2 = lengthSquared(velocity); // velocity.lengthSq() in SFML3
-        if(speed2 > 20000.f) {
+
+        auto force = sf::Vector2f(std::cos(angle), std::sin(angle)) * tfact;
+        auto newvel = velocity + force;
+
+        // accept new velocity if the speed is less than the threshold or if it at least
+        // is less or equal to the old speed:
+        if(auto newspeed = lengthSquared(newvel); newspeed < 20000.f) {
+            velocity = newvel;
+        } else if(auto oldspeed = lengthSquared(velocity); newspeed <= oldspeed) {
+            velocity = newvel;
+        } else { // no speed increase, but let it change direction towards where the player
+                 // is aiming the ship:
+            velocity = newvel * 20000.f / oldspeed;
             std::cout << "max speed reached" << std::endl;
-            velocity *= 20000.f / speed2;
         }
     }
     else
     {
         player.setTexture(normalTexture);
     }
+
     // Move in direction player is pointed
     player.move(velocity * time);
 
