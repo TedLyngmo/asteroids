@@ -10,15 +10,14 @@
 #include <cstddef>
 #include <initializer_list>
 #include <iterator>
+#include <ostream>
 #include <utility>
 #include <vector>
-#include <ostream>
 
 #include <iostream>
 
 class Polygon : public sf::ConvexShape {
 public:
-
     template<class It>
     Polygon(It first, It last) : sf::ConvexShape(std::distance(first, last)), tpnts(std::distance(first, last)) {
         std::size_t idx = 0;
@@ -50,29 +49,25 @@ public:
     //    Return: >0 for point  left of the line through P0 and P1
     //            =0 for point  on the line
     //            <0 for point  right of the line
-    static inline float sideOfLine(sf::Vector2f point, sf::Vector2f P0, sf::Vector2f P1) {
-        return (P1.x - P0.x) * (point.y - P0.y) - (point.x -  P0.x) * (P1.y - P0.y);
-    }
+    static inline float sideOfLine(sf::Vector2f point, sf::Vector2f P0, sf::Vector2f P1) { return (P1.x - P0.x) * (point.y - P0.y) - (point.x - P0.x) * (P1.y - P0.y); }
 
     // wn_PnPoly(): winding number test for a point in a polygon
     //      Input:   P = a point,
     //      Return:  wn = the winding number (=0 only when P is outside)
-    inline int wn_PnPoly(sf::Vector2f P) const
-    {
-        int    wn = 0;    // the  winding number counter
+    inline int wn_PnPoly(sf::Vector2f P) const {
+        int wn = 0; // the  winding number counter
 
         // loop through all edges of the polygon
         auto prev = tpnts.back();
         for(auto& curr : tpnts) {
-            if (curr.y <= P.y) {                           // start y <= P.y
-                if (prev.y  > P.y)                         // an upward crossing
-                     if (sideOfLine(P, curr, prev) > 0.f)  // P left of  edge
-                         ++wn;                             // have  a valid up intersect
-            }
-            else {                                         // start y > P.y (no test needed)
-                if (prev.y  <= P.y)                        // a downward crossing
-                     if (sideOfLine(P, curr, prev) < 0.f)  // P right of  edge
-                         --wn;                             // have  a valid down intersect
+            if(curr.y <= P.y) {                         // start y <= P.y
+                if(prev.y > P.y)                        // an upward crossing
+                    if(sideOfLine(P, curr, prev) > 0.f) // P left of  edge
+                        ++wn;                           // have  a valid up intersect
+            } else {                                    // start y > P.y (no test needed)
+                if(prev.y <= P.y)                       // a downward crossing
+                    if(sideOfLine(P, curr, prev) < 0.f) // P right of  edge
+                        --wn;                           // have  a valid down intersect
             }
             prev = curr;
         }

@@ -1,7 +1,7 @@
 #include "player.hpp"
 
-#include "helpers.hpp"
 #include "game_manager.hpp"
+#include "helpers.hpp"
 #include "pi.hpp"
 
 #include <SFML/Graphics.hpp>
@@ -20,14 +20,16 @@ sf::Vector2f GhostSprite::getPoint(std::size_t index) const {
     const sf::Transform& trans = getTransform();
 
     switch(index) {
-        case 0: return trans.transformPoint(sf::Vector2f(gb.left, gb.top));
-        case 1: return trans.transformPoint(sf::Vector2f(gb.left + gb.width, gb.top + gb.height/2.f));
-        case 2: return trans.transformPoint(sf::Vector2f(gb.left, gb.top + gb.height));
+    case 0:
+        return trans.transformPoint(sf::Vector2f(gb.left, gb.top));
+    case 1:
+        return trans.transformPoint(sf::Vector2f(gb.left + gb.width, gb.top + gb.height / 2.f));
+    case 2:
+        return trans.transformPoint(sf::Vector2f(gb.left, gb.top + gb.height));
     default:
         return {};
     }
 }
-
 
 sf::Texture loadTextureFromFile(const std::string& filename) {
     sf::Texture rv;
@@ -38,27 +40,20 @@ sf::Texture loadTextureFromFile(const std::string& filename) {
 }
 
 Player::Player(GameManager& gm, sf::RenderWindow& window, BulletManager& bm) :
-    gameManagerPtr(&gm),
-    bulletMgr(&bm),
-    windowptr(&window),
-    view(window.getView()),
-    normalTexture(loadTextureFromFile("content/normal.png")),
-    firedTexture{loadTextureFromFile("content/fired1.png"), loadTextureFromFile("content/fired2.png")},
-    view_bounds(view)
-{
+    gameManagerPtr(&gm), bulletMgr(&bm), windowptr(&window), view(window.getView()), normalTexture(loadTextureFromFile("content/normal.png")),
+    firedTexture{loadTextureFromFile("content/fired1.png"), loadTextureFromFile("content/fired2.png")}, view_bounds(view) {
     player.setTexture(normalTexture);
     player.setScale({.2f, .2f});
 
-    //auto [left, top, pwidth, pheight] = player.getGlobalBounds();
+    // auto [left, top, pwidth, pheight] = player.getGlobalBounds();
     auto [left, top, pwidth, pheight] = player.getLocalBounds();
     player.setOrigin({pwidth / 2.f, pheight / 2.f});
 
-    auto[wwidth, wheight] = window.getSize();
+    auto [wwidth, wheight] = window.getSize();
     player.setPosition({wwidth / 2.f, wheight / 2.f});
 }
 
-float Player::getAngle() const
-{
+float Player::getAngle() const {
     return player.getRotation();
 }
 
@@ -77,23 +72,21 @@ bool Player::handleEvent([[maybe_unused]] const sf::Event& ev) {
 static std::minstd_rand prng(std::random_device{}());
 static std::bernoulli_distribution fire_dist{};
 
-void Player::Move(duration time)
-{
+void Player::Move(duration time) {
     fire_cooldown -= time;
 
-    if (fire_cooldown < 0.f && sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
+    if(fire_cooldown < 0.f && sf::Keyboard::isKeyPressed(sf::Keyboard::Space)) {
         bulletMgr->AddBullet(*this, getPosition(), getVelocity(), getAngle());
         fire_cooldown += 0.30f;
     }
 
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) {
         player.rotate(-70 * time);
     } else if(sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) {
         player.rotate(70 * time);
     }
 
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
-    {
+    if(sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {
         player.setTexture(firedTexture[fire_dist(prng)]);
         auto angle = player.getRotation() * pi / 180;
         float tfact = time * 25;
@@ -112,9 +105,7 @@ void Player::Move(duration time)
             velocity = newvel * 20000.f / oldspeed;
             std::cout << "max speed reached" << std::endl;
         }
-    }
-    else
-    {
+    } else {
         player.setTexture(normalTexture);
     }
 
@@ -124,25 +115,18 @@ void Player::Move(duration time)
     screenWrapping();
 }
 
-void Player::screenWrapping()
-{
+void Player::screenWrapping() {
     // If player goes beyond x bounds set position to opposite site of screen
-    if (player.getPosition().x >= view_bounds.right)
-    {
+    if(player.getPosition().x >= view_bounds.right) {
         player.setPosition({view_bounds.left, player.getPosition().y});
-    }
-    else if (player.getPosition().x < view_bounds.left)
-    {
+    } else if(player.getPosition().x < view_bounds.left) {
         player.setPosition({view_bounds.right - 1, player.getPosition().y});
     }
 
     // If player goes beyond y bounds set position to opposite site of screen
-    if (player.getPosition().y >= view_bounds.bottom)
-    {
+    if(player.getPosition().y >= view_bounds.bottom) {
         player.setPosition({player.getPosition().x, view_bounds.top});
-    }
-    else if (player.getPosition().y < view_bounds.top)
-    {
+    } else if(player.getPosition().y < view_bounds.top) {
         player.setPosition({player.getPosition().x, view_bounds.bottom - 1});
     }
 }
@@ -151,8 +135,7 @@ void Player::AddScore(unsigned s) {
     score += s;
 }
 
-void Player::Draw()
-{
+void Player::Draw() {
     sf::Vector2f wc = view.getCenter();
     sf::Vector2f ws = view.getSize();
 
@@ -165,9 +148,9 @@ void Player::Draw()
 
     sf::Text num(std::to_string(score), gameManagerPtr->getFont(), 30);
     auto numb = num.getGlobalBounds();
-    num.setPosition({wc.x - numb.width/2.f, wc.y - ws.y/2});
+    num.setPosition({wc.x - numb.width / 2.f, wc.y - ws.y / 2});
 
-    //windowptr->draw(scoret);
+    // windowptr->draw(scoret);
     windowptr->draw(num);
     windowptr->draw(player);
 }

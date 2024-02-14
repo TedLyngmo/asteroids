@@ -33,7 +33,7 @@ private:
         void drawTo(sf::RenderWindow& window);
         inline sf::Vector2f getPosition() const { return bullet.getPosition(); }
 
-        //sf::RectangleShape bullet;
+        // sf::RectangleShape bullet;
         sf::CircleShape bullet;
         sf::Vector2f velocity;
         BulletOwner* owner;

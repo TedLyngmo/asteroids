@@ -11,7 +11,7 @@
 #include <iostream>
 #include <random>
 
-static std::mt19937_64 no_random(3);                             // make sure the rocks always looks the same
+static std::mt19937_64 no_random(3);                               // make sure the rocks always looks the same
 static std::uniform_real_distribution<float> rfactor(.90f, 1.10f); // to not just have boring circles
 
 sf::Vector2f getVelocity(float speed, float direction_radians) {
@@ -47,7 +47,7 @@ const std::array<Polygon, 8> RockManager::shapes{{
 static std::mt19937_64 prng(std::random_device{}());
 static std::uniform_real_distribution<float> rnd_angle_dist(0.f, 360.f);
 static std::uniform_real_distribution<float> rnd_radians_dist(-pi, pi);
-static std::uniform_real_distribution<float> rnd_radians45_dist(-pi/4.f, pi/4.f);
+static std::uniform_real_distribution<float> rnd_radians45_dist(-pi / 4.f, pi / 4.f);
 static std::uniform_real_distribution<float> rnd_angvel_dist(-27.5f, 27.5f);
 static std::uniform_int_distribution<int> rnd_color_dist(-5, 5);
 
@@ -116,8 +116,7 @@ void RockManager::update() {
 }
 
 RockManager::RockManager(sf::RenderWindow& window, unsigned MaxRocks) :
-    windowptr(&window), view(window.getView()), view_bounds(view), window_width(static_cast<float>(window.getSize().x)), window_height(static_cast<float>(window.getSize().y)), max_rocks(MaxRocks)
-{
+    windowptr(&window), view(window.getView()), view_bounds(view), window_width(static_cast<float>(window.getSize().x)), window_height(static_cast<float>(window.getSize().y)), max_rocks(MaxRocks) {
     rocks.reserve(500);
 }
 
@@ -138,22 +137,22 @@ void RockManager::Move(duration time) {
     std::for_each(std::execution::par, rocks.begin(), rocks.end(), [this, time](Rock& r) {
         r.Move(time);
 
-        auto [x,y] = r.rock.getPosition();
+        auto [x, y] = r.rock.getPosition();
         auto rb = r.rock.getGlobalBounds();
 
         if(rb.left >= view_bounds.right) {
-            r.rock.setPosition({view_bounds.left - rb.width/2, y});
+            r.rock.setPosition({view_bounds.left - rb.width / 2, y});
             r.aimTowards({window_width / 2, window_height / 2});
         } else if(rb.left + rb.width < view_bounds.left) {
-            r.rock.setPosition({view_bounds.right - 1 + rb.width/2, y});
+            r.rock.setPosition({view_bounds.right - 1 + rb.width / 2, y});
             r.aimTowards({window_width / 2, window_height / 2});
         }
 
         if(rb.top >= view_bounds.bottom) {
-            r.rock.setPosition({x, view_bounds.top - rb.height/2});
+            r.rock.setPosition({x, view_bounds.top - rb.height / 2});
             r.aimTowards({window_width / 2, window_height / 2});
         } else if(rb.top + rb.height < view_bounds.top) {
-            r.rock.setPosition({x, view_bounds.bottom - 1 + rb.height/2});
+            r.rock.setPosition({x, view_bounds.bottom - 1 + rb.height / 2});
             r.aimTowards({window_width / 2, window_height / 2});
         }
     });

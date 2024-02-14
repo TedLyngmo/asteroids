@@ -18,9 +18,7 @@ class RockManager : public GameObject {
         void Move(duration time);
         void drawTo(sf::RenderWindow& window);
         void aimTowards(sf::Vector2f);
-        inline bool isInside(sf::Vector2f pnt) const {
-            return rock.isInside(pnt);
-        }
+        inline bool isInside(sf::Vector2f pnt) const { return rock.isInside(pnt); }
 
         template<class Shape>
         bool intersects(const Shape& s) {
@@ -31,9 +29,7 @@ class RockManager : public GameObject {
         inline sf::Vector2f getVelocity() const { return velocity; }
         inline float getVolume() const { return rock.getVolume(); }
         inline float getMass() const { return getVolume(); }
-        inline void  applyForce(const sf::Vector2f& impulse) {
-            velocity += impulse / getMass();
-        }
+        inline void applyForce(const sf::Vector2f& impulse) { velocity += impulse / getMass(); }
 
         Polygon rock;
         sf::Vector2f velocity;
@@ -48,12 +44,8 @@ public:
     void Move(duration time) override;
     void Draw() override;
 
-    inline auto begin() {
-        return rocks.begin();
-    }
-    inline auto end() {
-        return rocks.end();
-    }
+    inline auto begin() { return rocks.begin(); }
+    inline auto end() { return rocks.end(); }
 
     void hit(Rock& r, BulletOwner& bo);
 

@@ -2,8 +2,8 @@
 #define PLAYER_HPP
 
 #include "bullet.hpp"
-#include "helpers.hpp"
 #include "game_object.hpp"
+#include "helpers.hpp"
 #include "times.hpp"
 
 #include <SFML/Graphics.hpp>
@@ -13,8 +13,8 @@
 
 class GhostSprite : public sf::Sprite {
 public:
-     std::size_t getPointCount() const;
-     sf::Vector2f getPoint(std::size_t index) const;
+    std::size_t getPointCount() const;
+    sf::Vector2f getPoint(std::size_t index) const;
 };
 
 class GameManager;
@@ -31,7 +31,7 @@ public:
     const sf::Vector2f& getPosition() const;
     const sf::Vector2f& getVelocity() const;
     inline float getMass() const { return 10000.f; }
-    inline void  applyForce(sf::Vector2f impulse) {
+    inline void applyForce(sf::Vector2f impulse) {
         impulse = impulse / getMass();
         auto damage = (length(impulse) + 200.f) / 2.f;
         health -= damage;
